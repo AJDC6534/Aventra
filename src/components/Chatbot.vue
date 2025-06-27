@@ -131,7 +131,7 @@ export default {
     async loadChatHistory() {
       try {
         const itineraryId = this.$route.params.itineraryId || ''
-        const response = await fetch(`/api/chat-history/${itineraryId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chat-history/${itineraryId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -163,7 +163,7 @@ export default {
       this.scrollToBottom()
       
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

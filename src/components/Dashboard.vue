@@ -120,7 +120,7 @@ export default {
   methods: {
     async fetchItineraries() {
       try {
-        const response = await fetch('/api/itineraries', {
+        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/itineraries', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -144,7 +144,7 @@ export default {
     async deleteTrip(id) {
       if (confirm('Are you sure you want to delete this trip?')) {
         try {
-          const response = await fetch(`/api/itineraries/${id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
