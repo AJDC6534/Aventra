@@ -120,7 +120,7 @@ export default {
   methods: {
     async fetchItineraries() {
       try {
-        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/itineraries', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

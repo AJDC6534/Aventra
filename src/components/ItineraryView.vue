@@ -815,7 +815,7 @@ export default {
       }
       
       try {
-        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/ai/suggest-activities', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/suggest-activities`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

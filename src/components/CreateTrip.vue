@@ -356,7 +356,7 @@ export default {
       try {
         console.log('Generating AI itinerary with:', this.form)
         
-        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/generate-itinerary', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/generate-itinerary`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -392,7 +392,7 @@ export default {
         
         console.log('Creating manual itinerary:', itinerary)
         
-        const response = await fetch('${import.meta.env.VITE_API_BASE_URL}/api/itineraries', {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
