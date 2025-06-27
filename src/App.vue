@@ -41,9 +41,8 @@ export default {
       return !!localStorage.getItem('token');
     },
     isAuthPage() {
-      const path = this.$route.path.replace(/^\/Aventra/, '');
       const authRoutes = ['/login', '/register'];
-      return authRoutes.includes(path);
+      return authRoutes.includes(this.$route.path.replace(/^\/[^/]+/, ''));
     }
   },
   methods: {
