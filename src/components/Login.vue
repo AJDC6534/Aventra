@@ -73,6 +73,8 @@ export default {
     async login() {
       this.loading = true
       this.error = ''
+      this.$emit('auth-change');
+      this.$router.push('/dashboard');
       
       try {
         const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
