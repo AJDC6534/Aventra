@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://aventra-backend-1.onrender.com',
+        target: 'https://aventra-backend.onrender.com',
         changeOrigin: true,
       },
     },
