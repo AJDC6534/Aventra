@@ -1,12 +1,11 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
+    <!-- Navigation for authenticated users -->
     <nav v-if="isAuthenticated" class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
-            <router-link to="/dashboard" class="text-xl font-bold text-blue-600">
-              AvenTra
-            </router-link>
+            <router-link to="/dashboard" class="text-xl font-bold text-blue-600">AvenTra</router-link>
           </div>
           <div class="flex items-center space-x-4">
             <router-link to="/dashboard" class="text-gray-600 hover:text-gray-900">Dashboard</router-link>
@@ -19,6 +18,7 @@
       </div>
     </nav>
 
+    <!-- Navigation for login/register pages -->
     <nav v-else-if="isAuthPage" class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16 items-center">
@@ -26,9 +26,9 @@
         </div>
       </div>
     </nav>
-    
+
     <main class="flex-1">
-      <router-view />
+      <router-view @auth-change="checkAuth" />
     </main>
   </div>
 </template>
@@ -36,23 +36,33 @@
 <script>
 export default {
   name: 'App',
+  data() {
+    return {
+      isAuthenticatedState: !!localStorage.getItem('token')
+    };
+  },
   computed: {
     isAuthenticated() {
-      return !!localStorage.getItem('token');
+      return this.isAuthenticatedState;
     },
     isAuthPage() {
+      const path = this.$route.path.replace(/^\/Aventra/, '');
       const authRoutes = ['/login', '/register'];
-      return authRoutes.includes(this.$route.path.replace(/^\/[^/]+/, ''));
+      return authRoutes.includes(path);
     }
   },
   methods: {
     logout() {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      this.isAuthenticatedState = false;
       this.$router.push('/login');
+    },
+    checkAuth() {
+      this.isAuthenticatedState = !!localStorage.getItem('token');
     }
   }
-}
+};
 </script>
 
 <style>
