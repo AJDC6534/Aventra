@@ -27,13 +27,6 @@
       </div>
     </nav>
 
-    <!-- Debug info (optional, remove later) -->
-    <div class="text-center py-2 text-sm text-gray-500">
-      Route: {{ $route.path }} |
-      Authenticated: {{ isAuthenticated }} |
-      Is Auth Page: {{ isAuthPage }}
-    </div>
-
     <!-- Main content -->
     <main class="flex-1">
       <router-view />
