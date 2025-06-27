@@ -1097,7 +1097,7 @@ export default {
   methods: {
     async fetchUserData() {
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/profile', {
+        const response = await fetch('/api/users/profile', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1181,7 +1181,7 @@ export default {
     
     async fetchRecentActivity() {
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/activity', {
+        const response = await fetch('/api/users/activity', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1230,7 +1230,7 @@ export default {
     
     async fetchTravelHistory() {
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/travel-history', {
+        const response = await fetch('/api/users/travel-history', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1289,7 +1289,7 @@ export default {
       this.updating = true
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/profile', {
+        const response = await fetch('/api/users/profile', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1328,7 +1328,7 @@ export default {
       this.updatingPreferences = true
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/preferences', {
+        const response = await fetch('/api/users/preferences', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1366,7 +1366,7 @@ export default {
       this.changingPassword = true
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/change-password', {
+        const response = await fetch('/api/users/change-password', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1399,7 +1399,7 @@ export default {
     
     async toggleTwoFactor() {
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/two-factor', {
+        const response = await fetch('/api/users/two-factor', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1445,7 +1445,7 @@ export default {
       formData.append('profilePicture', file)
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/profile-picture', {
+        const response = await fetch('/api/users/profile-picture', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1471,7 +1471,7 @@ export default {
       if (this.deleteConfirmation !== 'DELETE') return
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/users/delete-account', {
+        const response = await fetch('/api/users/delete-account', {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1496,7 +1496,7 @@ export default {
       if (!rating || rating < 1 || rating > 5) return
       
       try {
-        const response = await fetch(`https://aventra-backend.onrender.com/api/itineraries/${trip.id}/rate`, {
+        const response = await fetch(`/api/itineraries/${trip.id}/rate`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

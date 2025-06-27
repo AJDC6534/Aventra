@@ -144,7 +144,7 @@ export default {
     async deleteTrip(id) {
       if (confirm('Are you sure you want to delete this trip?')) {
         try {
-          const response = await fetch(`https://aventra-backend.onrender.com/api/itineraries/${id}`, {
+          const response = await fetch(`/api/itineraries/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
