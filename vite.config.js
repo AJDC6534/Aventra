@@ -3,11 +3,12 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  base: '/Aventra/',
   server: {
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://aventra-backend-1.onrender.com',
         changeOrigin: true,
       },
     },
