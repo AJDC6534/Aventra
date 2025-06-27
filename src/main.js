@@ -29,10 +29,10 @@ const routes = [
   { path: '/chat/:itineraryId?', component: Chatbot, meta: { requiresAuth: true } },
 ]
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
+// const router = createRouter({
+//   history: createWebHistory(),
+//   routes,
+// })
 
 // Navigation guard
 router.beforeEach((to, from, next) => {
@@ -47,7 +47,7 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-
+const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
