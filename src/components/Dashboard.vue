@@ -120,7 +120,7 @@ export default {
   methods: {
     async fetchItineraries() {
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/itineraries', {
+        const response = await fetch('/api/itineraries', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
