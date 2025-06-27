@@ -10,6 +10,8 @@ export default defineConfig({
       '/api': {
         target: 'https://aventra-backend.onrender.com',
         changeOrigin: true,
+        secure: false, // Set to false if using self-signed certs (optional)
+        rewrite: (path) => path.replace(/^\/api/, ''), // Removes /api prefix before forwarding
       },
     },
   },
