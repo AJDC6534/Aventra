@@ -71,8 +71,6 @@ export default {
   },
   methods: {
     async login() {
-      this.loading = true
-      this.error = ''
       this.$emit('auth-change');
       this.$router.push('/dashboard');
       
