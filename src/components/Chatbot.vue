@@ -131,7 +131,7 @@ export default {
     async loadChatHistory() {
       try {
         const itineraryId = this.$route.params.itineraryId || ''
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chat-history/${itineraryId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chat-history/:itineraryId?`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }

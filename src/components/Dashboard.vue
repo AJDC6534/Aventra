@@ -144,15 +144,15 @@ export default {
     }
   },
     viewTrip(id) {
-      this.$router.push(`/itinerary/${id}`)
+      this.$router.push(`/:itineraryId?`)
     },
     chatWithTrip(id) {
-      this.$router.push(`/chat/${id}`)
+      this.$router.push(`/chat/:itineraryId?`)
     },
     async deleteTrip(id) {
       if (confirm('Are you sure you want to delete this trip?')) {
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/${id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/:itineraryId?`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`

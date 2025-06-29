@@ -459,7 +459,7 @@ export default {
   methods: {
     async fetchItinerary() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/:itineraryId?`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -525,7 +525,7 @@ export default {
       this.saving = true
       
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries/:itineraryId?`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
