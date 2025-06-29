@@ -1097,7 +1097,7 @@ export default {
   methods: {
     async fetchUserData() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/profile`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1181,7 +1181,7 @@ export default {
     
     async fetchRecentActivity() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/activity`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1230,7 +1230,7 @@ export default {
     
     async fetchTravelHistory() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/travel-history`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -1328,7 +1328,7 @@ export default {
       this.updatingPreferences = true
       
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/preferences`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1399,7 +1399,7 @@ export default {
     
     async toggleTwoFactor() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/two-factor`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
