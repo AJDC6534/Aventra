@@ -61,6 +61,14 @@ export default {
     checkAuth() {
       this.isAuthenticatedState = !!localStorage.getItem('token');
     }
+  },
+  watch: {
+    $route() {
+      this.checkAuth()
+    }
+  },
+  created() {
+    this.checkAuth()
   }
 };
 </script>
