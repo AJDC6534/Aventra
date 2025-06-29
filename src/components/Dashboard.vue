@@ -119,22 +119,30 @@ export default {
   },
   methods: {
     async fetchItineraries() {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        if (response.ok) {
-          this.itineraries = await response.json()
-        }
-      } catch (error) {
-        console.error('Error fetching itineraries:', error)
-      } finally {
-        this.loading = false
+  const token = localStorage.getItem('token');
+  console.log('Token being sent:', token);
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/itineraries`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    },
+    });
+
+    if (response.status === 403) {
+      console.error('403 Forbidden: Token might be invalid or expired');
+    }
+
+    if (response.ok) {
+      this.itineraries = await response.json();
+    }
+    } catch (error) {
+      console.error('Error fetching itineraries:', error);
+    } finally {
+      this.loading = false;
+    }
+  },
     viewTrip(id) {
       this.$router.push(`/itinerary/${id}`)
     },
