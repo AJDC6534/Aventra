@@ -578,7 +578,7 @@ export default {
   methods: {
     async fetchItinerary() {
       try {
-        const response = await fetch(`https://aventra-backend.onrender.com/api/itineraries/${this.$route.params.id}`, {
+        const response = await fetch(`http://localhost:5000/api/itineraries/${this.$route.params.id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -644,7 +644,7 @@ export default {
       this.saving = true
       
       try {
-        const response = await fetch(`https://aventra-backend.onrender.com/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`http://localhost:5000/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -934,7 +934,7 @@ export default {
       }
       
       try {
-        const response = await fetch('https://aventra-backend.onrender.com/api/ai/suggest-activities', {
+        const response = await fetch('http://localhost:5000/api/ai/suggest-activities', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
