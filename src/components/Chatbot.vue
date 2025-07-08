@@ -237,7 +237,7 @@ export default {
     async loadChatHistory() {
       try {
         const itineraryId = this.$route.params.itineraryId || ''
-        const response = await fetch(`http://localhost:5000/api/chat-history/${itineraryId}`, {
+        const response = await fetch(`https://aventra-backend.onrender.com/api/chat-history/${itineraryId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -269,7 +269,7 @@ export default {
       this.scrollToBottom()
       
       try {
-        const response = await fetch('http://localhost:5000/api/chat', {
+        const response = await fetch('https://aventra-backend.onrender.com/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

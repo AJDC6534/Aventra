@@ -565,7 +565,7 @@ export default {
       try {
         console.log('Generating AI itinerary with:', this.form)
         
-        const response = await fetch('http://localhost:5000/api/generate-itinerary', {
+        const response = await fetch('https://aventra-backend.onrender.com/api/generate-itinerary', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -601,7 +601,7 @@ export default {
         
         console.log('Creating manual itinerary:', itinerary)
         
-        const response = await fetch('http://localhost:5000/api/itineraries', {
+        const response = await fetch('https://aventra-backend.onrender.com/api/itineraries', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
