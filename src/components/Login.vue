@@ -194,7 +194,7 @@
 </template>
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+import { API_BASE_URL } from '@/config'
 export default {
   name: 'Login',
   
