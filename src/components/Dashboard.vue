@@ -473,7 +473,7 @@ export default {
   methods: {
     async fetchItineraries() {
       try {
-        const response = await fetch('http://localhost:5000/api/itineraries', {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -522,7 +522,7 @@ export default {
     async deleteTrip(id) {
       if (confirm('Are you sure you want to delete this trip?')) {
         try {
-          const response = await fetch(`http://localhost:5000/api/itineraries/${id}`, {
+          const response = await fetch(`${API_BASE_URL}/api/itineraries/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
