@@ -387,7 +387,6 @@
 </template>
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
 export default {
   name: 'Dashboard',
   
@@ -473,6 +472,7 @@ export default {
 
   methods: {
     async fetchItineraries() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/itineraries`, {
           headers: {
@@ -522,6 +522,7 @@ export default {
 
     async deleteTrip(id) {
       if (confirm('Are you sure you want to delete this trip?')) {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
         try {
           const response = await fetch(`${API_BASE_URL}/api/itineraries/${id}`, {
             method: 'DELETE',

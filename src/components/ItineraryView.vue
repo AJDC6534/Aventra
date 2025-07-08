@@ -525,7 +525,6 @@
 
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
 export default {
   name: 'ItineraryView',
   data() {
@@ -578,6 +577,7 @@ export default {
   },
   methods: {
     async fetchItinerary() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
           headers: {
@@ -643,7 +643,7 @@ export default {
     
     async saveItinerary() {
       this.saving = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
@@ -933,7 +933,7 @@ export default {
       if (!confirm('Generate AI suggestions for this day? This will add activities based on your preferences.')) {
         return
       }
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/ai/suggest-activities`, {
           method: 'POST',

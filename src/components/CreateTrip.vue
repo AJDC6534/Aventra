@@ -500,7 +500,6 @@
 </template>
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
 export default {
   name: 'CreateTrip',
   data() {
@@ -562,7 +561,7 @@ export default {
       
       this.loading = true
       this.error = ''
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         console.log('Generating AI itinerary with:', this.form)
         
@@ -593,7 +592,7 @@ export default {
     
     async handleSubmit() {
       if (!this.validateForm()) return
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const itinerary = {
           ...this.form,

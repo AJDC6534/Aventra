@@ -423,7 +423,6 @@
 </template>
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
 export default {
   name: 'ProfileView',
   data() {
@@ -551,6 +550,7 @@ export default {
     }
   },
   async mounted() {
+    
     console.log('🚀 Profile component mounted, starting data fetch...');
     console.log('🔑 Auth token present:', !!localStorage.getItem('token'));
     
@@ -568,6 +568,7 @@ export default {
   },
   methods: {
     async fetchUserData() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
           headers: {
@@ -652,6 +653,7 @@ export default {
     },
     
     async fetchRecentActivity() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/activity`, {
           headers: {
@@ -702,6 +704,7 @@ export default {
     
     async fetchTravelHistory() {
       try {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
         const response = await fetch(`${API_BASE_URL}/api/users/travel-history`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -759,7 +762,7 @@ export default {
       if (!this.validateProfileForm()) return
       
       this.updating = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
           method: 'PUT',
@@ -798,7 +801,7 @@ export default {
     async updatePreferences() {
       console.log('🎯 Updating preferences:', this.preferencesForm);
       this.updatingPreferences = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/preferences`, {
           method: 'PUT',
@@ -836,7 +839,7 @@ export default {
       if (!this.validatePasswordForm()) return
       
       this.changingPassword = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/change-password`, {
           method: 'PUT',
@@ -870,6 +873,7 @@ export default {
     },
     
     async toggleTwoFactor() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/two-factor`, {
           method: 'PUT',
@@ -915,7 +919,7 @@ export default {
       
       const formData = new FormData()
       formData.append('profilePicture', file)
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/profile-picture`, {
           method: 'POST',
@@ -941,7 +945,7 @@ export default {
     
     async deleteAccount() {
       if (this.deleteConfirmation !== 'DELETE') return
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/users/delete-account`, {
           method: 'DELETE',
@@ -966,7 +970,7 @@ export default {
     async rateTrip(trip) {
       const rating = prompt(`Rate your trip to ${trip.destination} (1-5 stars):`)
       if (!rating || rating < 1 || rating > 5) return
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/itineraries/${trip.id}/rate`, {
           method: 'PUT',

@@ -196,7 +196,6 @@
 <script>
 // Import markdown parser
 import { marked } from 'marked'
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
 
 export default {
   name: 'Chatbot',
@@ -236,6 +235,7 @@ export default {
     },
     
     async loadChatHistory() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const itineraryId = this.$route.params.itineraryId || ''
         const response = await fetch(`${API_BASE_URL}/api/chat-history/${itineraryId}`, {
@@ -268,7 +268,7 @@ export default {
       
       this.loading = true
       this.scrollToBottom()
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/chat`, {
           method: 'POST',
