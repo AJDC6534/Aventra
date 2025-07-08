@@ -164,6 +164,9 @@
 </template>
 
 <script>
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+
 export default {
   name: 'Register',
   
@@ -258,7 +261,7 @@ export default {
       this.error = ''
       
       try {
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
