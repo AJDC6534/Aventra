@@ -37,7 +37,7 @@
         </div>
 
         <!-- Mobile Menu -->
-        <div v-if="isMobileMenuOpen" id="mobile-menu" class="md:hidden mt-2 space-y-1 pb-4 pt-4 border-t border-gray-200">
+        <div v-if="isMobileMenuOpen" id="mobile-menu" class="flex flex-col md:hidden mt-2 space-y-1 pb-4 pt-4 border-t border-gray-200">
           <router-link to="/dashboard" @click="closeMobileMenu">Dashboard</router-link>
           <router-link to="/create-trip" @click="closeMobileMenu">New Trip</router-link>
           <router-link to="/chat" @click="closeMobileMenu">AI Assistant</router-link>
@@ -87,7 +87,7 @@
     </main>
 
     <!-- Mobile Menu Overlay -->
-    <div v-if="isMobileMenuOpen" @click="closeMobileMenu" class="flex flex-col fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden" aria-hidden="true"></div>
+    <div v-if="isMobileMenuOpen" @click="closeMobileMenu" class="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden" aria-hidden="true"></div>
   </div>
 </template>
 
