@@ -87,7 +87,7 @@
     </main>
 
     <!-- Mobile Menu Overlay -->
-    <div v-if="isMobileMenuOpen" @click="closeMobileMenu" class="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden" aria-hidden="true"></div>
+    <div v-if="isMobileMenuOpen" @click="closeMobileMenu" class="flex flex-col fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden" aria-hidden="true"></div>
   </div>
 </template>
 
