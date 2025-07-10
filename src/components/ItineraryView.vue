@@ -764,8 +764,9 @@ export default {
   },
   methods: {
     async fetchItinerary() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
-        const response = await fetch(`http://localhost:5000/api/itineraries/${this.$route.params.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -899,9 +900,9 @@ export default {
     
     async saveItinerary() {
       this.saving = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
-        const response = await fetch(`http://localhost:5000/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
