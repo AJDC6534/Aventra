@@ -21,30 +21,17 @@
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
           <div class="flex-1">
-            <!-- Title Section -->
-            <div class="mb-6">
-              <div v-if="!editMode" class="flex items-center gap-3 mb-3">
-                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{{ itinerary.title }}</h1>
-                <span v-if="itinerary.aiGenerated" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-3 py-1 rounded-full font-medium border border-emerald-200">
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                  </svg>
-                  AI Generated
-                </span>
-              </div>
-              <div v-else class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Trip Title</label>
-                <input 
-                  v-model="itinerary.title"
-                  type="text"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                  placeholder="Enter trip title"
-                >
-              </div>
+            <div class="flex items-center gap-3 mb-3">
+              <h1 class="text-3xl font-bold text-gray-900 tracking-tight">{{ itinerary.title }}</h1>
+              <span v-if="itinerary.aiGenerated" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-3 py-1 rounded-full font-medium border border-emerald-200">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                </svg>
+                AI Generated
+              </span>
             </div>
-
-            <!-- Trip Details -->
-            <div v-if="!editMode" class="flex flex-wrap items-center gap-6 text-gray-600 mb-4">
+            
+            <div class="flex flex-wrap items-center gap-6 text-gray-600 mb-4">
               <div class="flex items-center gap-2">
                 <div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
                   <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -70,175 +57,9 @@
                 <span>{{ tripDuration }} days</span>
               </div>
             </div>
-
-            <!-- Edit Mode - Trip Details -->
-            <div v-else class="space-y-6 mb-6">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Destination</label>
-                  <input 
-                    v-model="itinerary.destination"
-                    type="text"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    placeholder="Enter destination"
-                  >
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Budget ($)</label>
-                  <input 
-                    v-model.number="itinerary.budget"
-                    type="number"
-                    min="0"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    placeholder="Enter budget"
-                  >
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                  <input 
-                    v-model="itinerary.startDate"
-                    type="date"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    @change="updateDays"
-                  >
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                  <input 
-                    v-model="itinerary.endDate"
-                    type="date"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    @change="updateDays"
-                  >
-                </div>
-              </div>
-
-              <!-- Departure and Arrival Times -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Departure Time</label>
-                  <div class="grid grid-cols-2 gap-2">
-                    <input 
-                      v-model="itinerary.departureDate"
-                      type="date"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                    <input 
-                      v-model="itinerary.departureTime"
-                      type="time"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Arrival Time</label>
-                  <div class="grid grid-cols-2 gap-2">
-                    <input 
-                      v-model="itinerary.arrivalDate"
-                      type="date"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                    <input 
-                      v-model="itinerary.arrivalTime"
-                      type="time"
-                      class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <!-- Preferences -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-semibold text-gray-900">Travel Preferences</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Travel Pace</label>
-                    <select 
-                      v-model="itinerary.preferences.pace"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                      <option value="relaxed">Relaxed</option>
-                      <option value="moderate">Moderate</option>
-                      <option value="fast">Fast-paced</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Accommodation Type</label>
-                    <select 
-                      v-model="itinerary.preferences.accommodation"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                      <option value="budget">Budget (Hostels, Budget Hotels)</option>
-                      <option value="mid-range">Mid-range (3-star Hotels)</option>
-                      <option value="luxury">Luxury (4-5 star Hotels)</option>
-                      <option value="mixed">Mixed</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Transportation</label>
-                    <select 
-                      v-model="itinerary.preferences.transportation"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150"
-                    >
-                      <option value="public">Public Transport</option>
-                      <option value="rental">Rental Car</option>
-                      <option value="taxi">Taxi/Ride-sharing</option>
-                      <option value="walking">Walking</option>
-                      <option value="mixed">Mixed</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Interests & Activities</label>
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <label v-for="interest in availableInterests" :key="interest" class="flex items-center space-x-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        :value="interest"
-                        v-model="itinerary.preferences.interests"
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      >
-                      <span class="text-sm text-gray-700">{{ interest }}</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Dietary Restrictions</label>
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <label v-for="diet in availableDiets" :key="diet" class="flex items-center space-x-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        :value="diet"
-                        v-model="itinerary.preferences.dietary"
-                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      >
-                      <span class="text-sm text-gray-700">{{ diet }}</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Special Notes</label>
-                  <textarea 
-                    v-model="itinerary.preferences.notes"
-                    rows="3"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-150 resize-none"
-                    placeholder="Any special requirements, accessibility needs, or additional preferences..."
-                  ></textarea>
-                </div>
-              </div>
-            </div>
             
-            <!-- Trip Stats (View Mode) -->
-            <div v-if="!editMode" class="flex flex-wrap items-center gap-6 text-sm text-gray-600">
+            <!-- Trip Stats -->
+            <div class="flex flex-wrap items-center gap-6 text-sm text-gray-600">
               <div class="flex items-center gap-2">
                 <div class="w-4 h-4 bg-yellow-100 rounded-full flex items-center justify-center">
                   <svg class="w-2.5 h-2.5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
@@ -263,15 +84,6 @@
                   </svg>
                 </div>
                 <span class="capitalize">{{ itinerary.preferences.pace }} pace</span>
-              </div>
-              <!-- Travel Times -->
-              <div v-if="itinerary.departureTime && itinerary.arrivalTime" class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-sky-100 rounded-full flex items-center justify-center">
-                  <svg class="w-2.5 h-2.5 text-sky-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                  </svg>
-                </div>
-                <span>Depart {{ formatTime(itinerary.departureTime) }} → Arrive {{ formatTime(itinerary.arrivalTime) }}</span>
               </div>
             </div>
           </div>
@@ -442,7 +254,7 @@
                     <div class="flex-1">
                       <div class="flex items-center gap-3 mb-3">
                         <div class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-200">
-                          {{ formatTime(activity.time) }}
+                          {{ activity.time }}
                         </div>
                         <h3 class="font-semibold text-gray-900 text-lg">{{ activity.activity }}</h3>
                         <div v-if="activity.cost > 0" class="inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-full border border-emerald-200">
@@ -711,6 +523,7 @@
   </div>
 </template>
 
+
 <script>
 export default {
   name: 'ItineraryView',
@@ -721,35 +534,7 @@ export default {
       editMode: false,
       saving: false,
       showShareModal: false,
-      originalItinerary: null,
-      availableInterests: [
-        'Culture & History',
-        'Food & Dining',
-        'Shopping',
-        'Nightlife',
-        'Adventure Sports',
-        'Nature & Parks',
-        'Museums & Art',
-        'Architecture',
-        'Local Markets',
-        'Photography',
-        'Music & Theater',
-        'Religious Sites',
-        'Beaches',
-        'Hiking & Trekking',
-        'Water Activities',
-        'Wildlife'
-      ],
-      availableDiets: [
-        'Vegetarian',
-        'Vegan',
-        'Gluten-Free',
-        'Halal',
-        'Kosher',
-        'Dairy-Free',
-        'Nut Allergies',
-        'Seafood Allergies'
-      ]
+      originalItinerary: null, // For cancel functionality
     }
   },
   computed: {
@@ -792,8 +577,9 @@ export default {
   },
   methods: {
     async fetchItinerary() {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
-        const response = await fetch(`http://localhost:5000/api/itineraries/${this.$route.params.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -801,8 +587,7 @@ export default {
         
         if (response.ok) {
           this.itinerary = await response.json()
-          this.ensurePreferencesStructure()
-          this.originalItinerary = JSON.parse(JSON.stringify(this.itinerary))
+          this.originalItinerary = JSON.parse(JSON.stringify(this.itinerary)) // Deep copy
         } else {
           console.error('Failed to fetch itinerary')
         }
@@ -812,81 +597,11 @@ export default {
         this.loading = false
       }
     },
-
-    ensurePreferencesStructure() {
-      if (!this.itinerary.preferences) {
-        this.itinerary.preferences = {}
-      }
-      
-      // Ensure all preference fields exist
-      const defaultPreferences = {
-        pace: 'moderate',
-        accommodation: 'mid-range',
-        transportation: 'mixed',
-        interests: [],
-        dietary: [],
-        notes: ''
-      }
-      
-      Object.keys(defaultPreferences).forEach(key => {
-        if (this.itinerary.preferences[key] === undefined) {
-          this.itinerary.preferences[key] = defaultPreferences[key]
-        }
-      })
-
-      // Ensure travel times exist
-      if (!this.itinerary.departureTime) this.itinerary.departureTime = ''
-      if (!this.itinerary.arrivalTime) this.itinerary.arrivalTime = ''
-      if (!this.itinerary.departureDate) this.itinerary.departureDate = this.itinerary.startDate
-      if (!this.itinerary.arrivalDate) this.itinerary.arrivalDate = this.itinerary.endDate
-    },
     
     toggleEditMode() {
       this.editMode = !this.editMode
       if (this.editMode) {
         this.originalItinerary = JSON.parse(JSON.stringify(this.itinerary))
-      }
-    },
-
-    updateDays() {
-      if (!this.itinerary.startDate || !this.itinerary.endDate) return
-      
-      const start = new Date(this.itinerary.startDate)
-      const end = new Date(this.itinerary.endDate)
-      
-      if (end < start) {
-        this.itinerary.endDate = this.itinerary.startDate
-        return
-      }
-      
-      const newDuration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
-      const currentDays = this.itinerary.days?.length || 0
-      
-      if (newDuration !== currentDays) {
-        const newDays = []
-        const currentDate = new Date(start)
-        
-        for (let i = 0; i < newDuration; i++) {
-          const dayDate = new Date(currentDate)
-          
-          // Keep existing day if it exists
-          if (this.itinerary.days && this.itinerary.days[i]) {
-            newDays.push({
-              ...this.itinerary.days[i],
-              date: dayDate.toISOString().split('T')[0]
-            })
-          } else {
-            // Create new day
-            newDays.push({
-              date: dayDate.toISOString().split('T')[0],
-              activities: []
-            })
-          }
-          
-          currentDate.setDate(currentDate.getDate() + 1)
-        }
-        
-        this.itinerary.days = newDays
       }
     },
     
@@ -917,19 +632,20 @@ export default {
       const activities = this.itinerary.days[dayIndex].activities || []
       if (activities.length === 0) return '09:00'
       
+      // Find the latest time and add 2 hours
       const times = activities.map(a => a.time).sort()
       const lastTime = times[times.length - 1]
       const [hours, minutes] = lastTime.split(':').map(Number)
-      const nextHour = Math.min(hours + 2, 22)
+      const nextHour = Math.min(hours + 2, 22) // Don't go past 10 PM
       
       return `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
     },
     
     async saveItinerary() {
       this.saving = true
-      
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
-        const response = await fetch(`http://localhost:5000/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -944,6 +660,7 @@ export default {
           this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
           this.editMode = false
           
+          // Show success message
           this.showNotification('Itinerary saved successfully! 🎉', 'success')
         } else {
           throw new Error('Failed to save itinerary')
@@ -972,6 +689,7 @@ export default {
         await navigator.clipboard.writeText(this.shareUrl)
         this.showNotification('Link copied to clipboard! 📋', 'success')
       } catch (error) {
+        // Fallback for older browsers
         const textArea = document.createElement('textarea')
         textArea.value = this.shareUrl
         document.body.appendChild(textArea)
@@ -1013,41 +731,17 @@ export default {
       content += `Destination: ${this.itinerary.destination}\n`
       content += `Dates: ${this.formatDate(this.itinerary.startDate)} - ${this.formatDate(this.itinerary.endDate)}\n`
       content += `Duration: ${this.tripDuration} days\n`
-      content += `Budget: ${this.itinerary.budget || 'Not set'}\n`
-      content += `Estimated Cost: ${this.estimatedCost}\n`
-      
-      if (this.itinerary.departureTime && this.itinerary.arrivalTime) {
-        content += `Departure: ${this.formatDate(this.itinerary.departureDate)} at ${this.formatTime(this.itinerary.departureTime)}\n`
-        content += `Arrival: ${this.formatDate(this.itinerary.arrivalDate)} at ${this.formatTime(this.itinerary.arrivalTime)}\n`
-      }
-      
-      if (this.itinerary.preferences) {
-        content += `\nTRAVEL PREFERENCES:\n`
-        content += `Pace: ${this.itinerary.preferences.pace || 'Not specified'}\n`
-        content += `Accommodation: ${this.itinerary.preferences.accommodation || 'Not specified'}\n`
-        content += `Transportation: ${this.itinerary.preferences.transportation || 'Not specified'}\n`
-        if (this.itinerary.preferences.interests?.length > 0) {
-          content += `Interests: ${this.itinerary.preferences.interests.join(', ')}\n`
-        }
-        if (this.itinerary.preferences.dietary?.length > 0) {
-          content += `Dietary Restrictions: ${this.itinerary.preferences.dietary.join(', ')}\n`
-        }
-        if (this.itinerary.preferences.notes) {
-          content += `Notes: ${this.itinerary.preferences.notes}\n`
-        }
-      }
-      
-      content += `\n`
+      content += `Estimated Cost: $${this.estimatedCost}\n\n`
       
       this.itinerary.days.forEach((day, index) => {
         content += `=== DAY ${index + 1} - ${this.formatDayDate(day.date)} ===\n\n`
         
         if (day.activities && day.activities.length > 0) {
           day.activities.forEach(activity => {
-            content += `${this.formatTime(activity.time)} - ${activity.activity}\n`
+            content += `${activity.time} - ${activity.activity}\n`
             content += `Location: ${activity.location}\n`
             content += `Duration: ${activity.duration}\n`
-            content += `Cost: ${activity.cost || 0}\n`
+            content += `Cost: $${activity.cost || 0}\n`
             if (activity.notes) content += `Notes: ${activity.notes}\n`
             content += '\n'
           })
@@ -1074,15 +768,6 @@ export default {
         month: 'long',
         day: 'numeric'
       })
-    },
-
-    formatTime(timeString) {
-      if (!timeString) return ''
-      const [hours, minutes] = timeString.split(':')
-      const hour = parseInt(hours)
-      const ampm = hour >= 12 ? 'PM' : 'AM'
-      const displayHour = hour % 12 || 12
-      return `${displayHour}:${minutes} ${ampm}`
     },
     
     getDayCost(day) {
@@ -1134,9 +819,11 @@ export default {
     },
     
     showNotification(message, type = 'info') {
+      // Create notification element
       const notification = document.createElement('div')
       notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`
       
+      // Set styling based on type
       const styles = {
         success: 'bg-green-500 text-white',
         error: 'bg-red-500 text-white',
@@ -1152,12 +839,15 @@ export default {
         </div>
       `
       
+      // Add to DOM
       document.body.appendChild(notification)
       
+      // Animate in
       setTimeout(() => {
         notification.style.transform = 'translateX(0)'
       }, 100)
       
+      // Auto remove after 5 seconds
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)'
         setTimeout(() => {
@@ -1166,6 +856,158 @@ export default {
           }
         }, 300)
       }, 5000)
+    },
+    
+    // Additional utility methods
+    formatTime(timeString) {
+      if (!timeString) return ''
+      const [hours, minutes] = timeString.split(':')
+      const hour = parseInt(hours)
+      const ampm = hour >= 12 ? 'PM' : 'AM'
+      const displayHour = hour % 12 || 12
+      return `${displayHour}:${minutes} ${ampm}`
+    },
+    
+    getDurationInHours(duration) {
+      if (!duration) return 0
+      const match = duration.match(/(\d+(?:\.\d+)?)\s*(hour|hr|h)/i)
+      return match ? parseFloat(match[1]) : 2 // Default to 2 hours
+    },
+    
+    validateActivity(activity) {
+      const errors = []
+      if (!activity.activity || activity.activity.trim() === '') {
+        errors.push('Activity name is required')
+      }
+      if (!activity.location || activity.location.trim() === '') {
+        errors.push('Location is required')
+      }
+      if (!activity.time) {
+        errors.push('Time is required')
+      }
+      return errors
+    },
+    
+    checkTimeConflicts(dayIndex, activityIndex = -1) {
+      const day = this.itinerary.days[dayIndex]
+      if (!day.activities || day.activities.length <= 1) return []
+      
+      const conflicts = []
+      const activities = day.activities.map((act, index) => ({
+        ...act,
+        index,
+        startTime: this.timeToMinutes(act.time),
+        endTime: this.timeToMinutes(act.time) + (this.getDurationInHours(act.duration) * 60)
+      })).filter(act => act.index !== activityIndex)
+      
+      activities.forEach((act1, i) => {
+        activities.slice(i + 1).forEach(act2 => {
+          if ((act1.startTime < act2.endTime && act1.endTime > act2.startTime)) {
+            conflicts.push({
+              activity1: act1.activity,
+              activity2: act2.activity,
+              time1: act1.time,
+              time2: act2.time
+            })
+          }
+        })
+      })
+      
+      return conflicts
+    },
+    
+    timeToMinutes(timeString) {
+      if (!timeString) return 0
+      const [hours, minutes] = timeString.split(':').map(Number)
+      return hours * 60 + minutes
+    },
+    
+    minutesToTime(minutes) {
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+    },
+    
+    // Advanced features
+    async generateAISuggestion(dayIndex) {
+      if (!confirm('Generate AI suggestions for this day? This will add activities based on your preferences.')) {
+        return
+      }
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/ai/suggest-activities`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            destination: this.itinerary.destination,
+            date: this.itinerary.days[dayIndex].date,
+            preferences: this.itinerary.preferences,
+            existingActivities: this.itinerary.days[dayIndex].activities || []
+          })
+        })
+        
+        if (response.ok) {
+          const suggestions = await response.json()
+          // Add suggestions to the day
+          this.itinerary.days[dayIndex].activities = [
+            ...(this.itinerary.days[dayIndex].activities || []),
+            ...suggestions
+          ]
+          this.showNotification('AI suggestions added! 🤖', 'success')
+        }
+      } catch (error) {
+        console.error('Error generating AI suggestions:', error)
+        this.showNotification('Failed to generate suggestions. Please try again.', 'error')
+      }
+    },
+    
+    optimizeSchedule(dayIndex) {
+      const day = this.itinerary.days[dayIndex]
+      if (!day.activities || day.activities.length <= 1) return
+      
+      // Sort activities by time
+      day.activities.sort((a, b) => this.timeToMinutes(a.time) - this.timeToMinutes(b.time))
+      
+      // Adjust times to avoid conflicts
+      let currentTime = this.timeToMinutes(day.activities[0].time)
+      
+      day.activities.forEach((activity, index) => {
+        if (index > 0) {
+          const prevActivity = day.activities[index - 1]
+          const prevEndTime = this.timeToMinutes(prevActivity.time) + (this.getDurationInHours(prevActivity.duration) * 60)
+          currentTime = Math.max(currentTime, prevEndTime + 30) // 30 min buffer
+        }
+        
+        activity.time = this.minutesToTime(currentTime)
+        currentTime += this.getDurationInHours(activity.duration) * 60
+      })
+      
+      this.showNotification('Schedule optimized! ⚡', 'success')
+    },
+    
+    duplicateDay(dayIndex) {
+      if (confirm('Duplicate this day\'s activities to another day?')) {
+        const sourceDayActivities = JSON.parse(JSON.stringify(this.itinerary.days[dayIndex].activities || []))
+        
+        // Show day selection modal (simplified - you might want a proper modal)
+        const dayOptions = this.itinerary.days.map((day, index) => 
+          `${index + 1}: ${this.formatDayDate(day.date)}`
+        ).join('\n')
+        
+        const targetDay = prompt(`Select target day (1-${this.itinerary.days.length}):\n${dayOptions}`)
+        const targetIndex = parseInt(targetDay) - 1
+        
+        if (targetIndex >= 0 && targetIndex < this.itinerary.days.length && targetIndex !== dayIndex) {
+          this.itinerary.days[targetIndex].activities = [
+            ...(this.itinerary.days[targetIndex].activities || []),
+            ...sourceDayActivities
+          ]
+          this.showNotification(`Activities duplicated to Day ${targetIndex + 1}! 📋`, 'success')
+        }
+      }
     }
   }
 }
