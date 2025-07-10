@@ -997,30 +997,38 @@ export default {
     },
     
     formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      })
+      if (!dateString) return '';
+      // Handle both ISO strings and date objects
+      const date = new Date(dateString);
+      // Use UTC to avoid timezone issues
+      return new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString('en-US', {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+      });
     },
-    
+  
     formatDayDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-      })
-    },
-
-    formatTime(timeString) {
+      if (!dateString) return '';
+      // Handle both ISO strings and date objects
+      const date = new Date(dateString);
+      // Use UTC to avoid timezone issues
+      return new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric'
+      });
+  },
+  
+  formatTime(timeString) {
       if (!timeString) return '';
       const [hours, minutes] = timeString.split(':');
       const hour = parseInt(hours);
       const ampm = hour >= 12 ? 'PM' : 'AM';
       const displayHour = hour % 12 || 12;
       return `${displayHour}:${minutes} ${ampm}`;
-    },
+  },
     
     getDayCost(day) {
       if (!day.activities) return 0
