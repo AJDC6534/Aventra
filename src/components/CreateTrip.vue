@@ -602,6 +602,15 @@ export default {
     }
   },
   methods: {
+    formatTime(time) {
+      if (!time) return '';
+      const [hours, minutes] = time.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    },
+
     async generateWithAI() {
       if (!this.validateForm()) return
       
@@ -737,6 +746,11 @@ export default {
     const defaultEnd = new Date()
     defaultEnd.setDate(defaultEnd.getDate() + 4)
     this.form.endDate = defaultEnd.toISOString().split('T')[0]
+    
+    // Set default times
+    this.form.departureTime = '09:00';
+    this.form.arrivalTime = '18:00';
+    
   }
 }
 </script>
