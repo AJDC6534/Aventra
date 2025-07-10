@@ -1,3 +1,4 @@
+
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Loading State -->
@@ -327,6 +328,34 @@
 
       <!-- Quick Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 mb-1">Total Days</p>
+              <p class="text-2xl font-bold text-gray-900">{{ tripDuration }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 mb-1">Activities</p>
+              <p class="text-2xl font-bold text-gray-900">{{ totalActivities }}</p>
+            </div>
+          </div>
+        </div>
+        
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
@@ -764,9 +793,8 @@ export default {
   },
   methods: {
     async fetchItinerary() {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
-        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
+        const response = await fetch(`http://localhost:5000/api/itineraries/${this.$route.params.id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -900,9 +928,9 @@ export default {
     
     async saveItinerary() {
       this.saving = true
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      
       try {
-        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`http://localhost:5000/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
