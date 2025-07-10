@@ -811,136 +811,125 @@ export default {
     },
     
     toggleEditMode() {
-      this.editMode = !this.editMode;
-      if (this.editMode) {
-        // Populate edit form with current values
-        this.editForm = {
-          startDate: this.itinerary.startDate,
-          endDate: this.itinerary.endDate,
-          departureTime: this.itinerary.departureTime || '',
-          arrivalTime: this.itinerary.arrivalTime || '',
-          interests: [...(this.itinerary.interests || [])],
-          budget: this.itinerary.budget || 'mid-range',
-          pace: this.itinerary.pace || 'moderate',
-          notes: this.itinerary.notes || ''
-        };
-      }
-    },
-    
-    addActivity(dayIndex) {
-      if (!this.itinerary.days[dayIndex].activities) {
-        this.itinerary.days[dayIndex].activities = []
-      }
-      
-      const newTime = this.getNextAvailableTime(dayIndex)
-      
-      this.itinerary.days[dayIndex].activities.push({
-        time: newTime,
-        activity: '',
-        location: `${this.itinerary.destination} - City Center`,
-        duration: '2 hours',
-        cost: 0,
-        notes: ''
-      })
-    },
-    
-    removeActivity(dayIndex, activityIndex) {
-      if (confirm('Are you sure you want to remove this activity?')) {
-        this.itinerary.days[dayIndex].activities.splice(activityIndex, 1)
-      }
-    },
-    
-    getNextAvailableTime(dayIndex) {
-      const activities = this.itinerary.days[dayIndex].activities || []
-      if (activities.length === 0) return '09:00'
-      
-      // Find the latest time and add 2 hours
-      const times = activities.map(a => a.time).sort()
-      const lastTime = times[times.length - 1]
-      const [hours, minutes] = lastTime.split(':').map(Number)
-      const nextHour = Math.min(hours + 2, 22) // Don't go past 10 PM
-      
-      return `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+        this.editMode = !this.editMode;
+        if (this.editMode) {
+            // Convert numeric budget back to string preference for editing
+            let budgetPreference = 'mid-range'; // default
+            if (this.itinerary.budgetPreference) {
+                budgetPreference = this.itinerary.budgetPreference;
+            } else if (this.itinerary.budget) {
+                // Convert numeric budget to string preference
+                if (this.itinerary.budget <= 1500) {
+                    budgetPreference = 'budget';
+                } else if (this.itinerary.budget <= 3000) {
+                    budgetPreference = 'mid-range';
+                } else {
+                    budgetPreference = 'luxury';
+                }
+            }
+            
+            // Populate edit form with current values
+            this.editForm = {
+                startDate: this.itinerary.startDate,
+                endDate: this.itinerary.endDate,
+                departureTime: this.itinerary.departureTime || '',
+                arrivalTime: this.itinerary.arrivalTime || '',
+                interests: [...(this.itinerary.interests || [])],
+                budget: budgetPreference,
+                pace: this.itinerary.pace || 'moderate',
+                notes: this.itinerary.notes || ''
+            };
+        }
     },
     
     async saveChanges() {
-        this.saving = true;
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
-        
-        try {
-            // Update the itinerary with new values
-            this.itinerary.startDate = this.editForm.startDate;
-            this.itinerary.endDate = this.editForm.endDate;
-            this.itinerary.departureTime = this.editForm.departureTime;
-            this.itinerary.arrivalTime = this.editForm.arrivalTime;
-            this.itinerary.interests = [...this.editForm.interests];
-            this.itinerary.budget = this.editForm.budget;
-            this.itinerary.pace = this.editForm.pace;
-            this.itinerary.notes = this.editForm.notes;
-            
-            console.log('Saving itinerary:', this.itinerary);
-            console.log('API URL:', `${API_BASE_URL}/api/itineraries/${this.itinerary._id}`);
-            console.log('Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
-            
-            // Make API call to save changes
-            const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(this.itinerary)
-            });
-            
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            
-            if (response.ok) {
-                const updatedItinerary = await response.json();
-                console.log('Updated itinerary received:', updatedItinerary);
-                this.itinerary = updatedItinerary;
-                this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
-                this.editMode = false;
-                
-                this.showNotification('Trip details updated successfully! 🎉', 'success');
-            } else {
-                // Get error details from response
-                const errorText = await response.text();
-                console.error('API Error:', response.status, errorText);
-                
-                let errorMessage = 'Failed to save changes.';
-                try {
-                    const errorData = JSON.parse(errorText);
-                    errorMessage = errorData.message || errorMessage;
-                } catch (e) {
-                    errorMessage = `Server error (${response.status}): ${errorText}`;
-                }
-                
-                this.showNotification(errorMessage, 'error');
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
-            
-        } catch (error) {
-            console.error('Error saving changes:', error);
-            
-            // More specific error handling
-            if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                this.showNotification('Network error. Please check your internet connection.', 'error');
-            } else if (error.message.includes('401')) {
-                this.showNotification('Authentication failed. Please log in again.', 'error');
-                // Optionally redirect to login
-                // window.location.href = '/login';
-            } else if (error.message.includes('403')) {
-                this.showNotification('You don\'t have permission to edit this itinerary.', 'error');
-            } else if (error.message.includes('404')) {
-                this.showNotification('Itinerary not found. It may have been deleted.', 'error');
-            } else if (!error.message.includes('HTTP')) {
-                this.showNotification('Failed to save changes. Please try again.', 'error');
-            }
-        } finally {
-            this.saving = false;
-        }
-    },
+      this.saving = true;
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
+      
+      try {
+          // Update the itinerary with new values
+          this.itinerary.startDate = this.editForm.startDate;
+          this.itinerary.endDate = this.editForm.endDate;
+          this.itinerary.departureTime = this.editForm.departureTime;
+          this.itinerary.arrivalTime = this.editForm.arrivalTime;
+          this.itinerary.interests = [...this.editForm.interests];
+          this.itinerary.pace = this.editForm.pace;
+          this.itinerary.notes = this.editForm.notes;
+          
+          // Convert budget string to number for server compatibility
+          const budgetMap = {
+              'budget': 1000,
+              'mid-range': 2500,
+              'luxury': 5000
+          };
+          this.itinerary.budget = budgetMap[this.editForm.budget] || 2500;
+          
+          // Store the budget preference as well (if your schema supports it)
+          this.itinerary.budgetPreference = this.editForm.budget;
+          
+          console.log('Saving itinerary:', this.itinerary);
+          console.log('API URL:', `${API_BASE_URL}/api/itineraries/${this.itinerary._id}`);
+          console.log('Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+          
+          // Make API call to save changes
+          const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify(this.itinerary)
+          });
+          
+          console.log('Response status:', response.status);
+          console.log('Response headers:', response.headers);
+          
+          if (response.ok) {
+              const updatedItinerary = await response.json();
+              console.log('Updated itinerary received:', updatedItinerary);
+              this.itinerary = updatedItinerary;
+              this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
+              this.editMode = false;
+              
+              this.showNotification('Trip details updated successfully! 🎉', 'success');
+          } else {
+              // Get error details from response
+              const errorText = await response.text();
+              console.error('API Error:', response.status, errorText);
+              
+              let errorMessage = 'Failed to save changes.';
+              try {
+                  const errorData = JSON.parse(errorText);
+                  errorMessage = errorData.message || errorMessage;
+              } catch (e) {
+                  errorMessage = `Server error (${response.status}): ${errorText}`;
+              }
+              
+              this.showNotification(errorMessage, 'error');
+              throw new Error(`HTTP ${response.status}: ${errorText}`);
+          }
+          
+      } catch (error) {
+          console.error('Error saving changes:', error);
+          
+          // More specific error handling
+          if (error.name === 'TypeError' && error.message.includes('fetch')) {
+              this.showNotification('Network error. Please check your internet connection.', 'error');
+          } else if (error.message.includes('401')) {
+              this.showNotification('Authentication failed. Please log in again.', 'error');
+              // Optionally redirect to login
+              // window.location.href = '/login';
+          } else if (error.message.includes('403')) {
+              this.showNotification('You don\'t have permission to edit this itinerary.', 'error');
+          } else if (error.message.includes('404')) {
+              this.showNotification('Itinerary not found. It may have been deleted.', 'error');
+          } else if (!error.message.includes('HTTP')) {
+              this.showNotification('Failed to save changes. Please try again.', 'error');
+          }
+      } finally {
+          this.saving = false;
+      }
+  },
     
     cancelChanges() {
       if (confirm('Are you sure you want to cancel your changes?')) {
