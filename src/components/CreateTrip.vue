@@ -88,55 +88,101 @@
                   <p class="text-xs text-slate-500 mt-2 ml-1">Where would you like to explore and create memories?</p>
                 </div>
                 
-                <!-- Date Range -->
-                <div class="grid md:grid-cols-2 gap-6">
-                  <div class="group">
-                    <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
-                      Departure Date <span class="text-red-400">*</span>
-                    </label>
-                    <div class="relative">
-                      <input 
-                        v-model="form.startDate"
-                        type="date" 
-                        required
-                        :min="minDate"
-                        class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
-                      >
-                    </div>
-                  </div>
-                  <div class="group">
-                    <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
-                      Return Date <span class="text-red-400">*</span>
-                    </label>
-                    <div class="relative">
-                      <input 
-                        v-model="form.endDate"
-                        type="date" 
-                        required
-                        :min="form.startDate || minDate"
-                        class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
-                      >
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Trip Duration Display -->
-                <div v-if="tripDuration > 0" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                      <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                <!-- Date and Time Range -->
+                  <div class="space-y-6">
+                      <!-- Departure -->
+                      <div class="grid md:grid-cols-2 gap-6">
+                          <div class="group">
+                              <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                                  Departure Date <span class="text-red-400">*</span>
+                              </label>
+                              <div class="relative">
+                                  <input 
+                                      v-model="form.startDate"
+                                      type="date" 
+                                      required
+                                      :min="minDate"
+                                      class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                                  >
+                              </div>
+                          </div>
+                          <div class="group">
+                              <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                                  Departure Time
+                              </label>
+                              <div class="relative">
+                                  <input 
+                                      v-model="form.departureTime"
+                                      type="time" 
+                                      class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                                  >
+                                  <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                      <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                  </div>
+                              </div>
+                              <p class="text-xs text-slate-500 mt-2 ml-1">When do you plan to leave?</p>
+                          </div>
                       </div>
-                      <div>
-                        <h3 class="font-semibold text-slate-900">Trip Duration</h3>
-                        <p class="text-sm text-slate-600">{{ tripDuration }} {{ tripDuration === 1 ? 'day' : 'days' }} of adventure</p>
+                      
+                      <!-- Return -->
+                      <div class="grid md:grid-cols-2 gap-6">
+                          <div class="group">
+                              <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                                  Return Date <span class="text-red-400">*</span>
+                              </label>
+                              <div class="relative">
+                                  <input 
+                                      v-model="form.endDate"
+                                      type="date" 
+                                      required
+                                      :min="form.startDate || minDate"
+                                      class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                                  >
+                              </div>
+                          </div>
+                          <div class="group">
+                              <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                                                    Arrival Time
+                              </label>
+                              <div class="relative">
+                                  <input 
+                                      v-model="form.arrivalTime"
+                                      type="time" 
+                                      class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                                  >
+                                  <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                      <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                  </div>
+                              </div>
+                              <p class="text-xs text-slate-500 mt-2 ml-1">When do you plan to return?</p>
+                          </div>
                       </div>
-                    </div>
-                    <div class="text-2xl font-bold text-blue-600">{{ tripDuration }}</div>
                   </div>
-                </div>
+                  
+                  <!-- Trip Duration Display -->
+                  <div v-if="tripDuration > 0" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6">
+                      <div class="flex items-center justify-between">
+                          <div class="flex items-center space-x-3">
+                              <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                              </div>
+                                                <div>
+                                  <h3 class="font-semibold text-slate-900">Trip Duration</h3>
+                                  <p class="text-sm text-slate-600">{{ tripDuration }} {{ tripDuration === 1 ? 'day' : 'days' }} of adventure</p>
+                                  <div v-if="form.departureTime && form.arrivalTime" class="text-xs text-slate-500 mt-1">
+                                      {{ formatTime(form.departureTime) }} - {{ formatTime(form.arrivalTime) }}
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="text-2xl font-bold text-blue-600">{{ tripDuration }}</div>
+                      </div>
+                  </div>
               </div>
               
               <!-- Interests Section -->
