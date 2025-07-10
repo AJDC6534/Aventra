@@ -120,6 +120,38 @@
                   </div>
                 </div>
                 
+                <!-- Travel Times -->
+                <div class="grid md:grid-cols-2 gap-6">
+                  <div class="group">
+                    <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                      Departure Date
+                    </label>
+                    <div class="relative">
+                      <input 
+                        v-model="form.departureDate"
+                        type="date" 
+                        :min="minDate"
+                        :max="form.startDate"
+                        class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                      >
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 ml-1">When you leave for your trip</p>
+                  </div>
+                  <div class="group">
+                    <label class="block text-sm font-medium text-slate-700 mb-3 group-focus-within:text-blue-600 transition-colors">
+                      Estimated Arrival Time
+                    </label>
+                    <div class="relative">
+                      <input 
+                        v-model="form.arrivalTime"
+                        type="time" 
+                        class="w-full px-4 py-4 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 hover:border-slate-300"
+                      >
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2 ml-1">When you expect to arrive at destination</p>
+                  </div>
+                </div>
+                
                 <!-- Trip Duration Display -->
                 <div v-if="tripDuration > 0" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6">
                   <div class="flex items-center justify-between">
