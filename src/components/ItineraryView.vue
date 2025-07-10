@@ -863,7 +863,7 @@ export default {
       return `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
     },
     
-    async saveChanges() {
+    async saveItinerary() {
       this.saving = true;
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
                     
