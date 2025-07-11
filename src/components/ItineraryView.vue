@@ -835,97 +835,138 @@ export default {
               notes: this.itinerary.notes || ''
           };
       }
-  },
+    },
   
   async saveChanges() {
-      this.saving = true;
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
-      
-      try {
-          // Update the itinerary with new values
-          this.itinerary.startDate = this.editForm.startDate;
-          this.itinerary.endDate = this.editForm.endDate;
-          this.itinerary.departureTime = this.editForm.departureTime;
-          this.itinerary.arrivalTime = this.editForm.arrivalTime;
-          this.itinerary.interests = [...this.editForm.interests];
-          this.itinerary.pace = this.editForm.pace;
-          this.itinerary.notes = this.editForm.notes;
-          
-          // Convert budget string to number for server compatibility
-          const budgetMap = {
-              'budget': 1000,
-              'mid-range': 2500,
-              'luxury': 5000
-          };
-          this.itinerary.budget = budgetMap[this.editForm.budget] || 2500;
-          
-          // Store the budget preference as well (if your schema supports it)
-          this.itinerary.budgetPreference = this.editForm.budget;
-          
-          console.log('Saving itinerary:', this.itinerary);
-          console.log('API URL:', `${API_BASE_URL}/api/itineraries/${this.itinerary._id}`);
-          console.log('Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
-          
-          // Make API call to save changes
-          const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-              method: 'PUT',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify(this.itinerary)
-          });
-          
-          console.log('Response status:', response.status);
-          console.log('Response headers:', response.headers);
-          
-          if (response.ok) {
-              const updatedItinerary = await response.json();
-              console.log('Updated itinerary received:', updatedItinerary);
-              this.itinerary = updatedItinerary;
-              this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
-              this.editMode = false;
-              
-              this.showNotification('Trip details updated successfully! 🎉', 'success');
-          } else {
-              // Get error details from response
-              const errorText = await response.text();
-              console.error('API Error:', response.status, errorText);
-              
-              let errorMessage = 'Failed to save changes.';
-              try {
-                  const errorData = JSON.parse(errorText);
-                  errorMessage = errorData.message || errorMessage;
-              } catch (e) {
-                  errorMessage = `Server error (${response.status}): ${errorText}`;
-              }
-              
-              this.showNotification(errorMessage, 'error');
-              throw new Error(`HTTP ${response.status}: ${errorText}`);
-          }
-          
-      } catch (error) {
-          console.error('Error saving changes:', error);
-          
-          // More specific error handling
-          if (error.name === 'TypeError' && error.message.includes('fetch')) {
-              this.showNotification('Network error. Please check your internet connection.', 'error');
-          } else if (error.message.includes('401')) {
-              this.showNotification('Authentication failed. Please log in again.', 'error');
-              // Optionally redirect to login
-              // window.location.href = '/login';
-          } else if (error.message.includes('403')) {
-              this.showNotification('You don\'t have permission to edit this itinerary.', 'error');
-          } else if (error.message.includes('404')) {
-              this.showNotification('Itinerary not found. It may have been deleted.', 'error');
-          } else if (!error.message.includes('HTTP')) {
-              this.showNotification('Failed to save changes. Please try again.', 'error');
-          }
-      } finally {
-          this.saving = false;
-      }
-  },
+    this.saving = true;
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
     
+    try {
+        // Validate dates first
+        if (new Date(this.editForm.endDate) <= new Date(this.editForm.startDate)) {
+            this.showNotification('End date must be after start date.', 'error');
+            this.saving = false;
+            return;
+        }
+        
+        // Check if significant changes were made that warrant AI regeneration
+        const significantChanges = this.hasSignificantChanges();
+        
+        // Prepare update payload
+        const updatePayload = {
+            startDate: this.editForm.startDate,
+            endDate: this.editForm.endDate,
+            departureTime: this.editForm.departureTime,
+            arrivalTime: this.editForm.arrivalTime,
+            // Update preferences properly
+            preferences: {
+                interests: [...this.editForm.interests],
+                pace: this.editForm.pace,
+                accommodation: this.itinerary.preferences?.accommodation || '',
+            },
+            // Store both budget formats for compatibility
+            budget: this.getBudgetValue(this.editForm.budget),
+            budgetPreference: this.editForm.budget,
+            notes: this.editForm.notes,
+            
+            // Preserve existing data
+            title: this.itinerary.title,
+            destination: this.itinerary.destination,
+            days: this.itinerary.days // Will be updated by backend if dates changed
+        };
+        
+        console.log('Saving itinerary with payload:', updatePayload);
+        
+        // Make API call to save changes
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(updatePayload)
+        });
+        
+        if (response.ok) {
+            const updatedItinerary = await response.json();
+            console.log('Updated itinerary received:', updatedItinerary);
+            
+            // Ask user if they want to regenerate with AI if significant changes were made
+            if (significantChanges) {
+                const shouldRegenerate = confirm(
+                    'You made significant changes to dates, interests, or travel style. ' +
+                    'Would you like to regenerate the itinerary with AI based on your new preferences?'
+                );
+                
+                if (shouldRegenerate) {
+                    await this.regenerateWithAI(updatedItinerary);
+                }
+            }
+            
+            this.itinerary = updatedItinerary;
+            this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
+            this.editMode = false;
+            
+            this.showNotification('Trip details updated successfully! 🎉', 'success');
+        } else {
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            
+            let errorMessage = 'Failed to save changes.';
+            try {
+                const errorData = JSON.parse(errorText);
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                errorMessage = `Server error (${response.status}): ${errorText}`;
+            }
+            
+            this.showNotification(errorMessage, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error saving changes:', error);
+        this.showNotification('Failed to save changes. Please try again.', 'error');
+    } finally {
+        this.saving = false;
+    }
+},
+    hasSignificantChanges() {
+      // Check if dates changed
+    const originalStartDate = this.originalItinerary.startDate ? this.originalItinerary.startDate.split('T')[0] : '';
+    const originalEndDate = this.originalItinerary.endDate ? this.originalItinerary.endDate.split('T')[0] : '';
+    
+    const datesChanged = originalStartDate !== this.editForm.startDate || originalEndDate !== this.editForm.endDate;
+    
+    // Check if interests changed
+    const originalInterests = this.originalItinerary.preferences?.interests || [];
+    const interestsChanged = JSON.stringify(originalInterests.sort()) !== JSON.stringify(this.editForm.interests.sort());
+    
+    // Check if pace changed
+    const originalPace = this.originalItinerary.preferences?.pace || this.originalItinerary.pace || 'moderate';
+    const paceChanged = originalPace !== this.editForm.pace;
+    
+    // Check if budget changed significantly
+    const originalBudget = this.getBudgetPreference(this.originalItinerary.budget);
+    const budgetChanged = originalBudget !== this.editForm.budget;
+    
+    return datesChanged || interestsChanged || paceChanged || budgetChanged;
+},
+
+getBudgetValue(budgetPreference) {
+    const budgetMap = {
+        'budget': 1000,
+        'mid-range': 2500,
+        'luxury': 5000
+    };
+    return budgetMap[budgetPreference] || 2500;
+},
+
+getBudgetPreference(budgetValue) {
+    if (budgetValue <= 1000) return 'budget';
+    if (budgetValue <= 2500) return 'mid-range';
+    return 'luxury';
+},
+
     cancelChanges() {
       if (confirm('Are you sure you want to cancel your changes?')) {
         this.itinerary = JSON.parse(JSON.stringify(this.originalItinerary))
@@ -933,6 +974,63 @@ export default {
       }
     },
     
+    async regenerateWithAI(currentItinerary) {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
+    
+    try {
+        this.showNotification('Regenerating itinerary with AI... 🤖', 'info');
+        
+        const response = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+                destination: currentItinerary.destination,
+                startDate: currentItinerary.startDate,
+                endDate: currentItinerary.endDate,
+                interests: this.editForm.interests,
+                budget: this.editForm.budget,
+                pace: this.editForm.pace,
+                regenerate: true, // Flag to indicate this is a regeneration
+                existingItineraryId: currentItinerary._id
+            })
+        });
+        
+        if (response.ok) {
+            const newItinerary = await response.json();
+            
+            // Update current itinerary with new activities but keep the same ID
+            const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${currentItinerary._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    ...currentItinerary,
+                    days: newItinerary.days,
+                    aiGenerated: true,
+                    updatedAt: new Date()
+                })
+            });
+            
+            if (updateResponse.ok) {
+                const finalItinerary = await updateResponse.json();
+                this.itinerary = finalItinerary;
+                this.originalItinerary = JSON.parse(JSON.stringify(finalItinerary));
+                this.showNotification('Itinerary regenerated with AI! 🎉', 'success');
+            }
+        } else {
+            this.showNotification('AI regeneration failed. Manual changes saved.', 'warning');
+        }
+    } catch (error) {
+        console.error('Error regenerating with AI:', error);
+        this.showNotification('AI regeneration failed. Manual changes saved.', 'warning');
+    }
+},
+
     shareItinerary() {
       this.showShareModal = true
     },
