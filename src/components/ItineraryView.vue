@@ -199,23 +199,6 @@
             <!-- Regular action buttons when not in edit mode -->
             <template v-else>
               <button 
-                @click="regenerateEntireItinerary"
-                :disabled="generatingAI"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-150 disabled:opacity-50"
-              >
-                <div v-if="generatingAI" class="animate-spin">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                {{ generatingAI ? 'Regenerating...' : 'Regenerate with AI' }}
-              </button>
-              
-              <button 
                 @click="exportItinerary"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors duration-150"
               >
@@ -227,7 +210,7 @@
               
               <button 
                 @click="shareItinerary"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-150"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-150"
               >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
@@ -358,65 +341,16 @@
               </div>
               <div class="flex items-center gap-3">
                 <div class="text-3xl">{{ getDayIcon(dayIndex) }}</div>
-                <div v-if="editMode" class="flex items-center gap-2">
-                  <button 
-                    @click="addActivity(dayIndex)"
-                    class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Add Activity"
-                  >
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </button>
-                  
-                  <div class="relative">
-                    <button 
-                      @click="toggleDayMenu(dayIndex)"
-                      class="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition-colors"
-                      title="AI Options"
-                    >
-                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </button>
-                    
-                    <!-- Day AI Menu -->
-                    <div v-if="showDayMenu === dayIndex" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                      <div class="p-2">
-                        <button 
-                          @click="generateAIActivities(dayIndex)"
-                          :disabled="generatingAI"
-                          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          {{ generatingAI ? 'Generating...' : 'Generate AI Activities' }}
-                        </button>
-                        
-                        <button 
-                          @click="optimizeDay(dayIndex)"
-                          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                          Optimize Schedule
-                        </button>
-                        
-                        <button 
-                          @click="clearDay(dayIndex)"
-                          class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Clear Day
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <button 
+                  v-if="editMode" 
+                  @click="addActivity(dayIndex)"
+                  class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Add Activity"
+                >
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -568,56 +502,16 @@
                     </div>
                     
                     <!-- Edit button when in edit mode -->
-                    <div v-if="editMode" class="flex items-center gap-2">
-                      <button 
-                        @click="editActivity(dayIndex, actIndex)"
-                        class="text-gray-500 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit Activity"
-                      >
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      
-                      <div class="relative">
-                        <button 
-                          @click="toggleActivityMenu(dayIndex, actIndex)"
-                          class="text-gray-500 hover:text-purple-600 p-2 hover:bg-purple-50 rounded-lg transition-colors"
-                          title="AI Options"
-                        >
-                          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                          </svg>
-                        </button>
-                        
-                        <!-- Activity AI Menu -->
-                        <div v-if="showActivityMenu === `${dayIndex}-${actIndex}`" class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-                          <div class="p-2">
-                            <button 
-                              @click="enhanceActivity(dayIndex, actIndex)"
-                              :disabled="generatingAI"
-                              class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
-                            >
-                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                              </svg>
-                              Enhance with AI
-                            </button>
-                            
-                            <button 
-                              @click="generateAlternatives(dayIndex, actIndex)"
-                              :disabled="generatingAI"
-                              class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
-                            >
-                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                              </svg>
-                              Find Alternatives
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <button 
+                      v-if="editMode"
+                      @click="editActivity(dayIndex, actIndex)"
+                      class="text-gray-500 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit Activity"
+                    >
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -743,11 +637,6 @@ export default {
       newDuration: 0,
       selectedInterest: '',
       
-      // AI Generation
-      generatingAI: false,
-      showDayMenu: null,
-      showActivityMenu: null,
-      
       // Activity editing
       editingActivity: null,
       
@@ -864,8 +753,6 @@ export default {
       } else {
         this.cancelActivityEdit()
         this.showDateWarning = false
-        this.showDayMenu = null
-        this.showActivityMenu = null
       }
     },
     
@@ -1300,29 +1187,13 @@ export default {
       // Auto remove after 5 seconds
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)'
-        notification.addEventListener('transitionend', () => {
+        setTimeout(() => {
           if (notification.parentElement) {
             notification.remove()
           }
-        })
+        }, 300)
       }, 5000)
-    },
-    
-    // Close menus when clicking outside
-    handleClickOutside(event) {
-      if (!event.target.closest('.relative')) {
-        this.showDayMenu = null
-        this.showActivityMenu = null
-      }
     }
-  },
-  
-  mounted() {
-    document.addEventListener('click', this.handleClickOutside)
-  },
-  
-  beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside)
   }
 }
 </script>
