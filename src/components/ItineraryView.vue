@@ -1,13 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Loading State -->
-    <div v-if="loading" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <div v-if="loading" class="max-w-5xl mx-auto px-4 py-8">
+      <div class="bg-white rounded-xl shadow-sm border p-8">
         <div class="animate-pulse space-y-6">
           <div class="h-8 bg-gray-200 rounded-lg w-3/4"></div>
           <div class="h-4 bg-gray-200 rounded-md w-1/2"></div>
           <div class="space-y-4">
-            <div class="h-20 bg-gray-200 rounded-lg"></div>
             <div class="h-20 bg-gray-200 rounded-lg"></div>
             <div class="h-20 bg-gray-200 rounded-lg"></div>
           </div>
@@ -16,36 +15,33 @@
     </div>
 
     <!-- Main Content -->
-    <div v-else-if="itinerary" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Header Section with Editable Title -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+    <div v-else-if="itinerary" class="max-w-5xl mx-auto px-4 py-8">
+      <!-- Header Section -->
+      <div class="bg-white rounded-xl shadow-sm border p-8 mb-8">
         <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+          <!-- Trip Info -->
           <div class="flex-1">
+            <!-- Title -->
             <div class="flex items-center gap-3 mb-3">
-              <!-- Editable Title -->
               <input 
                 v-if="editMode"
                 v-model="editForm.title"
-                class="text-3xl font-bold text-gray-900 tracking-tight bg-transparent border-b-2 border-blue-300 focus:border-blue-500 focus:outline-none"
+                class="text-3xl font-bold text-gray-900 bg-transparent border-b-2 border-blue-300 focus:border-blue-500 focus:outline-none"
                 placeholder="Trip title..."
               />
-              <h1 v-else class="text-3xl font-bold text-gray-900 tracking-tight">{{ itinerary.title }}</h1>
+              <h1 v-else class="text-3xl font-bold text-gray-900">{{ itinerary.title }}</h1>
               
               <span v-if="itinerary.aiGenerated" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-xs px-3 py-1 rounded-full font-medium border border-emerald-200">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                </svg>
-                AI Generated
+                🤖 AI Generated
               </span>
             </div>
             
-            <!-- Editable Destination -->
+            <!-- Trip Details -->
             <div class="flex flex-wrap items-center gap-6 text-gray-600 mb-4">
+              <!-- Destination -->
               <div class="flex items-center gap-2">
                 <div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                  </svg>
+                  📍
                 </div>
                 <input 
                   v-if="editMode"
@@ -56,12 +52,10 @@
                 <span v-else class="font-medium">{{ itinerary.destination }}</span>
               </div>
               
-              <!-- Date display/edit -->
+              <!-- Dates -->
               <div class="flex items-center gap-2">
                 <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg class="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-                  </svg>
+                  📅
                 </div>
                 <div v-if="editMode" class="flex items-center gap-2">
                   <input 
@@ -82,51 +76,35 @@
                 <span v-else>{{ formatDate(itinerary.startDate) }} - {{ formatDate(itinerary.endDate) }}</span>
               </div>
               
-              <!-- Trip duration -->
+              <!-- Duration -->
               <div class="flex items-center gap-2">
                 <div class="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center">
-                  <svg class="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                  </svg>
+                  ⏱️
                 </div>
                 <span>{{ tripDuration }} days</span>
               </div>
             </div>
             
-            <!-- Trip Stats -->
+            <!-- Preferences -->
             <div class="flex flex-wrap items-center gap-6 text-sm text-gray-600">
-              <!-- Editable Budget -->
+              <!-- Budget -->
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <svg class="w-2.5 h-2.5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span>Budget: 
-                  <select v-if="editMode" v-model="editForm.budget" class="bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none capitalize">
-                    <option value="budget">Budget ($500-1000)</option>
-                    <option value="mid-range">Mid-range ($1000-2500)</option>
-                    <option value="luxury">Luxury ($2500+)</option>
-                  </select>
-                  <span v-else class="font-medium capitalize">{{ getBudgetLabel(itinerary.budget) }}</span>
-                </span>
+                <span>💰 Budget:</span>
+                <select v-if="editMode" v-model="editForm.budget" class="bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none capitalize">
+                  <option value="budget">Budget</option>
+                  <option value="mid-range">Mid-range</option>
+                  <option value="luxury">Luxury</option>
+                </select>
+                <span v-else class="font-medium capitalize">{{ getBudgetLabel(itinerary.budget) }}</span>
               </div>
               
-              <!-- Interests display/edit -->
-              <div v-if="editMode || (itinerary.preferences?.interests?.length)" class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <svg class="w-2.5 h-2.5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <span v-if="!editMode">{{ (itinerary.preferences?.interests || []).slice(0, 2).join(', ') }}{{ (itinerary.preferences?.interests?.length || 0) > 2 ? ` +${(itinerary.preferences?.interests?.length || 0) - 2}` : '' }}</span>
-                <div v-else class="flex flex-wrap gap-1">
-                  <select v-model="selectedInterest" @change="addInterest" class="text-xs bg-transparent border border-gray-300 rounded px-2 py-1">
-                    <option value="">Add interest...</option>
-                    <option v-for="interest in availableInterests" :key="interest.value" :value="interest.value">
-                      {{ interest.label }}
-                    </option>
+              <!-- Interests -->
+              <div v-if="editMode || hasInterests" class="flex items-center gap-2">
+                <span>🎯 Interests:</span>
+                <div v-if="editMode" class="flex flex-wrap gap-1">
+                  <select v-model="selectedInterest" @change="addInterest" class="text-xs border border-gray-300 rounded px-2 py-1">
+                    <option value="">Add...</option>
+                    <option v-for="interest in availableInterests" :key="interest" :value="interest">{{ interest }}</option>
                   </select>
                   <span v-for="interest in editForm.interests" :key="interest" 
                     class="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
@@ -134,21 +112,18 @@
                     <button @click="removeInterest(interest)" class="hover:text-blue-600">×</button>
                   </span>
                 </div>
+                <span v-else>{{ displayInterests }}</span>
               </div>
               
-              <!-- Pace display/edit -->
+              <!-- Pace -->
               <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-orange-100 rounded-full flex items-center justify-center">
-                  <svg class="w-2.5 h-2.5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-                  </svg>
-                </div>
+                <span>⚡ Pace:</span>
                 <select v-if="editMode" v-model="editForm.pace" class="bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none capitalize">
-                  <option value="relaxed">Relaxed pace</option>
-                  <option value="moderate">Moderate pace</option>
-                  <option value="active">Active pace</option>
+                  <option value="relaxed">Relaxed</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="active">Active</option>
                 </select>
-                <span v-else class="capitalize">{{ itinerary.preferences?.pace || 'moderate' }} pace</span>
+                <span v-else class="capitalize">{{ itinerary.preferences?.pace || 'moderate' }}</span>
               </div>
             </div>
           </div>
@@ -157,65 +132,48 @@
           <div class="flex flex-wrap gap-3">
             <button 
               @click="toggleEditMode"
-              class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-150"
+              class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <svg v-if="editMode" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              {{ editMode ? 'View Mode' : 'Edit Details' }}
+              {{ editMode ? '👁️ View Mode' : '✏️ Edit Details' }}
             </button>
             
-            <!-- Save/Cancel buttons when in edit mode -->
-            <div v-if="editMode" class="flex gap-2">
+            <!-- Edit Mode Buttons -->
+            <template v-if="editMode">
               <button 
                 @click="saveChanges"
                 :disabled="saving"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-150 disabled:opacity-50"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                <div v-if="saving" class="animate-spin">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-                <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h2m0 0V9a2 2 0 012-2h2m-6 9l2 2 4-4" />
-                </svg>
-                {{ saving ? 'Saving...' : 'Save' }}
+                {{ saving ? '⏳ Saving...' : '💾 Save' }}
               </button>
-              
               <button 
                 @click="cancelChanges"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-150"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
               >
-                Cancel
+                ❌ Cancel
               </button>
-            </div>
+            </template>
             
-            <!-- Regular action buttons when not in edit mode -->
+            <!-- View Mode Buttons -->
             <template v-else>
               <button 
-                @click="exportItinerary"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors duration-150"
+                @click="regenerateEntireItinerary"
+                :disabled="generatingAI"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export
+                {{ generatingAI ? '🤖 Regenerating...' : '🤖 Regenerate with AI' }}
               </button>
-              
+              <button 
+                @click="exportItinerary"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                📄 Export
+              </button>
               <button 
                 @click="shareItinerary"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors duration-150"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                </svg>
-                Share
+                🔗 Share
               </button>
             </template>
           </div>
@@ -226,9 +184,7 @@
       <div v-if="showDateWarning" class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
         <div class="flex items-start gap-4">
           <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg>
+            ⚠️
           </div>
           <div class="flex-1">
             <h3 class="text-lg font-medium text-amber-800 mb-2">Trip Dates Changed</h3>
@@ -236,17 +192,11 @@
               You've changed the trip duration from {{ originalDuration }} to {{ newDuration }} days. 
               {{ newDuration > originalDuration ? 'New days will be added.' : 'Some days may be removed.' }}
             </p>
-            <div class="flex flex-wrap gap-3">
-              <button 
-                @click="acceptDateChange" 
-                class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-              >
+            <div class="flex gap-3">
+              <button @click="acceptDateChange" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors">
                 Keep New Dates
               </button>
-              <button 
-                @click="revertDateChange" 
-                class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
-              >
+              <button @click="revertDateChange" class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
                 Revert Changes
               </button>
             </div>
@@ -254,58 +204,38 @@
         </div>
       </div>
 
-      <!-- Quick Summary Cards -->
+      <!-- Summary Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white rounded-xl shadow-sm border p-6">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-              </svg>
-            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl">📅</div>
             <div>
               <p class="text-sm font-medium text-gray-600 mb-1">Total Days</p>
               <p class="text-2xl font-bold text-gray-900">{{ tripDuration }}</p>
             </div>
           </div>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white rounded-xl shadow-sm border p-6">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-            </div>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-2xl">📋</div>
             <div>
               <p class="text-sm font-medium text-gray-600 mb-1">Activities</p>
               <p class="text-2xl font-bold text-gray-900">{{ totalActivities }}</p>
             </div>
           </div>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white rounded-xl shadow-sm border p-6">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-              </svg>
-            </div>
+            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-2xl">💰</div>
             <div>
               <p class="text-sm font-medium text-gray-600 mb-1">Est. Cost</p>
               <p class="text-2xl font-bold text-gray-900">${{ estimatedCost }}</p>
             </div>
           </div>
         </div>
-        
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+        <div class="bg-white rounded-xl shadow-sm border p-6">
           <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-2xl">⭐</div>
             <div>
               <p class="text-sm font-medium text-gray-600 mb-1">Status</p>
               <p class="text-2xl font-bold text-gray-900">{{ tripStatus }}</p>
@@ -317,12 +247,12 @@
       <!-- Daily Itinerary -->
       <div class="space-y-8">
         <div 
-          v-for="(day, dayIndex) in workingDays" 
+          v-for="(day, dayIndex) in currentDays" 
           :key="`day-${dayIndex}`" 
-          class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+          class="bg-white rounded-xl shadow-sm border overflow-hidden"
         >
           <!-- Day Header -->
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b">
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-xl font-semibold text-gray-900 mb-1">
@@ -330,27 +260,57 @@
                 </h2>
                 <div class="flex items-center gap-4 text-sm text-gray-600">
                   <span>{{ day.activities?.length || 0 }} activities planned</span>
-                  <span v-if="getDayCost(day) > 0" class="flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-                    </svg>
-                    Estimated cost: ${{ getDayCost(day) }}
-                  </span>
+                  <span v-if="getDayCost(day) > 0">💰 ${{ getDayCost(day) }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <div class="text-3xl">{{ getDayIcon(dayIndex) }}</div>
-                <button 
-                  v-if="editMode" 
-                  @click="addActivity(dayIndex)"
-                  class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="Add Activity"
-                >
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </button>
+                
+                <!-- Edit Mode Controls -->
+                <div v-if="editMode" class="flex items-center gap-2">
+                  <button 
+                    @click="addActivity(dayIndex)"
+                    class="text-blue-600 hover:text-blue-800 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Add Activity"
+                  >
+                    ➕
+                  </button>
+                  
+                  <div class="relative">
+                    <button 
+                      @click="toggleDayMenu(dayIndex)"
+                      class="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition-colors"
+                      title="AI Options"
+                    >
+                      🤖
+                    </button>
+                    
+                    <!-- Day AI Menu -->
+                    <div v-if="showDayMenu === dayIndex" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border z-10">
+                      <div class="p-2">
+                        <button 
+                          @click="generateAIActivities(dayIndex)"
+                          :disabled="generatingAI"
+                          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
+                        >
+                          ⚡ {{ generatingAI ? 'Generating...' : 'Generate AI Activities' }}
+                        </button>
+                        <button 
+                          @click="optimizeDay(dayIndex)"
+                          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                        >
+                          🔄 Optimize Schedule
+                        </button>
+                        <button 
+                          @click="clearDay(dayIndex)"
+                          class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
+                        >
+                          🗑️ Clear Day
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -361,11 +321,11 @@
               <div 
                 v-for="(activity, actIndex) in day.activities" 
                 :key="`activity-${dayIndex}-${actIndex}`"
-                class="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-all duration-200"
-                :class="{ 'border-blue-300 bg-blue-50': editingActivity?.dayIndex === dayIndex && editingActivity?.actIndex === actIndex }"
+                class="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-all"
+                :class="{ 'border-blue-300 bg-blue-50': isEditingActivity(dayIndex, actIndex) }"
               >
                 <!-- Edit Activity Form -->
-                <div v-if="editingActivity?.dayIndex === dayIndex && editingActivity?.actIndex === actIndex" class="space-y-4">
+                <div v-if="isEditingActivity(dayIndex, actIndex)" class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
@@ -429,23 +389,14 @@
                   </div>
                   
                   <div class="flex gap-3 pt-4">
-                    <button 
-                      @click="saveActivity"
-                      class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                    >
-                      Save Activity
+                    <button @click="saveActivity" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                      💾 Save Activity
                     </button>
-                    <button 
-                      @click="cancelActivityEdit"
-                      class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
-                    >
-                      Cancel
+                    <button @click="cancelActivityEdit" class="bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
+                      ❌ Cancel
                     </button>
-                    <button 
-                      @click="deleteActivity(dayIndex, actIndex)"
-                      class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors ml-auto"
-                    >
-                      Delete
+                    <button @click="deleteActivity(dayIndex, actIndex)" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors ml-auto">
+                      🗑️ Delete
                     </button>
                   </div>
                 </div>
@@ -469,30 +420,19 @@
                       
                       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 mb-4">
                         <div class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                          </svg>
-                          <span>{{ activity.location }}</span>
+                          📍 <span>{{ activity.location }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                          </svg>
-                          <span>{{ activity.duration }}</span>
+                          ⏱️ <span>{{ activity.duration }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-                          </svg>
-                          <span>{{ getActivityCategory(activity.activity) }}</span>
+                          🏷️ <span>{{ getActivityCategory(activity.activity) }}</span>
                         </div>
                       </div>
                       
                       <div v-if="activity.notes" class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                         <div class="flex items-start gap-2">
-                          <svg class="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                          </svg>
+                          <span class="text-amber-600">💡</span>
                           <div>
                             <p class="text-sm font-medium text-amber-800">Note</p>
                             <p class="text-sm text-amber-700">{{ activity.notes }}</p>
@@ -501,28 +441,55 @@
                       </div>
                     </div>
                     
-                    <!-- Edit button when in edit mode -->
-                    <button 
-                      v-if="editMode"
-                      @click="editActivity(dayIndex, actIndex)"
-                      class="text-gray-500 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit Activity"
-                    >
-                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
+                    <!-- Edit Controls -->
+                    <div v-if="editMode" class="flex items-center gap-2">
+                      <button 
+                        @click="editActivity(dayIndex, actIndex)"
+                        class="text-gray-500 hover:text-blue-600 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit Activity"
+                      >
+                        ✏️
+                      </button>
+                      
+                      <div class="relative">
+                        <button 
+                          @click="toggleActivityMenu(dayIndex, actIndex)"
+                          class="text-gray-500 hover:text-purple-600 p-2 hover:bg-purple-50 rounded-lg transition-colors"
+                          title="AI Options"
+                        >
+                          🤖
+                        </button>
+                        
+                        <!-- Activity AI Menu -->
+                        <div v-if="showActivityMenu === `${dayIndex}-${actIndex}`" class="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border z-20">
+                          <div class="p-2">
+                            <button 
+                              @click="enhanceActivity(dayIndex, actIndex)"
+                              :disabled="generatingAI"
+                              class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
+                            >
+                              ✨ Enhance with AI
+                            </button>
+                            <button 
+                              @click="generateAlternatives(dayIndex, actIndex)"
+                              :disabled="generatingAI"
+                              class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2 disabled:opacity-50"
+                            >
+                              🔄 Find Alternatives
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <!-- Empty State / Add First Activity -->
+            <!-- Empty State -->
             <div v-else class="text-center py-16">
-              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
+              <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                📝
               </div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">No activities planned for this day</h3>
               <p class="text-gray-600 mb-4">Start planning by adding your first activity.</p>
@@ -531,10 +498,7 @@
                 @click="addActivity(dayIndex)"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Activity
+                ➕ Add Activity
               </button>
             </div>
           </div>
@@ -543,37 +507,27 @@
     </div>
 
     <!-- Error State -->
-    <div v-else class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-      <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg class="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
+    <div v-else class="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">
+        ❌
       </div>
       <h2 class="text-2xl font-bold text-gray-900 mb-4">Itinerary Not Found</h2>
-      <p class="text-gray-600 mb-8 max-w-md mx-auto">The itinerary you're looking for doesn't exist or you don't have permission to view it.</p>
+      <p class="text-gray-600 mb-8">The itinerary you're looking for doesn't exist or you don't have permission to view it.</p>
       <button 
         onclick="window.history.back()" 
-        class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-150"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-        Go Back
+        ⬅️ Go Back
       </button>
     </div>
 
     <!-- Share Modal -->
     <div v-if="showShareModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="showShareModal = false">
-      <div class="bg-white rounded-xl shadow-xl border border-gray-200 p-6 max-w-md w-full" @click.stop>
+      <div class="bg-white rounded-xl shadow-xl border p-6 max-w-md w-full" @click.stop>
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-gray-900">Share Itinerary</h3>
-          <button 
-            @click="showShareModal = false"
-            class="text-gray-400 hover:text-gray-600 transition-colors duration-150"
-          >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+            ❌
           </button>
         </div>
         
@@ -588,9 +542,9 @@
               >
               <button 
                 @click="copyShareUrl"
-                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-150"
+                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
               >
-                Copy
+                📋 Copy
               </button>
             </div>
           </div>
@@ -598,21 +552,15 @@
           <div class="grid grid-cols-2 gap-3">
             <button 
               @click="shareViaEmail" 
-              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-150"
+              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
             >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Email
+              📧 Email
             </button>
             <button 
               @click="shareViaWhatsApp" 
-              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors duration-150"
+              class="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors"
             >
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.786"/>
-              </svg>
-              WhatsApp
+              💬 WhatsApp
             </button>
           </div>
         </div>
@@ -623,23 +571,18 @@
 
 <script>
 export default {
-  name: 'EnhancedItineraryView',
+  name: 'CleanItineraryEditor',
+
   data() {
     return {
+      // Core data
       itinerary: null,
+      originalItinerary: null,
       loading: true,
+      
+      // Edit mode
       editMode: false,
       saving: false,
-      showShareModal: false,
-      showDateWarning: false,
-      originalItinerary: null,
-      originalDuration: 0,
-      newDuration: 0,
-      selectedInterest: '',
-      
-      // Activity editing
-      editingActivity: null,
-      
       editForm: {
         title: '',
         destination: '',
@@ -651,19 +594,28 @@ export default {
         notes: ''
       },
       
+      // Date handling
+      showDateWarning: false,
+      originalDuration: 0,
+      newDuration: 0,
+      
+      // Activity editing
+      editingActivity: null,
+      
+      // AI features
+      generatingAI: false,
+      showDayMenu: null,
+      showActivityMenu: null,
+      
+      // UI state
+      showShareModal: false,
+      selectedInterest: '',
+      
+      // Available options
       availableInterests: [
-        { value: 'Culture', label: 'Culture', icon: '🏛️' },
-        { value: 'Food', label: 'Food', icon: '🍽️' },
-        { value: 'Adventure', label: 'Adventure', icon: '🏔️' },
-        { value: 'Nature', label: 'Nature', icon: '🌿' },
-        { value: 'History', label: 'History', icon: '📚' },
-        { value: 'Art', label: 'Art', icon: '🎨' },
-        { value: 'Shopping', label: 'Shopping', icon: '🛍️' },
-        { value: 'Nightlife', label: 'Nightlife', icon: '🌃' },
-        { value: 'Museums', label: 'Museums', icon: '🏛️' },
-        { value: 'Architecture', label: 'Architecture', icon: '🏗️' },
-        { value: 'Beach', label: 'Beach', icon: '🏖️' },
-        { value: 'Mountains', label: 'Mountains', icon: '⛰️' }
+        'Culture', 'Food', 'Adventure', 'Nature', 'History', 
+        'Art', 'Shopping', 'Nightlife', 'Museums', 'Architecture', 
+        'Beach', 'Mountains'
       ]
     }
   },
@@ -681,16 +633,19 @@ export default {
       return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
     },
     
+    currentDays() {
+      if (this.editMode && this.showDateWarning) {
+        return this.generateDaysFromDates(this.editForm.startDate, this.editForm.endDate)
+      }
+      return this.itinerary?.days || []
+    },
+    
     totalActivities() {
-      const days = this.editMode ? this.workingDays : this.itinerary?.days
-      if (!days) return 0
-      return days.reduce((total, day) => total + (day.activities?.length || 0), 0)
+      return this.currentDays.reduce((total, day) => total + (day.activities?.length || 0), 0)
     },
     
     estimatedCost() {
-      const days = this.editMode ? this.workingDays : this.itinerary?.days
-      if (!days) return 0
-      return days.reduce((total, day) => {
+      return this.currentDays.reduce((total, day) => {
         return total + (day.activities?.reduce((dayTotal, activity) => dayTotal + (activity.cost || 0), 0) || 0)
       }, 0)
     },
@@ -710,11 +665,13 @@ export default {
       return `${window.location.origin}/itinerary/${this.itinerary?._id}`
     },
     
-    workingDays() {
-      if (this.editMode && this.showDateWarning) {
-        return this.generateDaysFromDates(this.editForm.startDate, this.editForm.endDate)
-      }
-      return this.itinerary?.days || []
+    hasInterests() {
+      return this.itinerary?.preferences?.interests?.length > 0
+    },
+    
+    displayInterests() {
+      const interests = this.itinerary?.preferences?.interests || []
+      return interests.slice(0, 2).join(', ') + (interests.length > 2 ? ` +${interests.length - 2}` : '')
     }
   },
   
@@ -723,13 +680,15 @@ export default {
   },
   
   methods: {
+    // =============================================================================
+    // DATA MANAGEMENT
+    // =============================================================================
+    
     async fetchItinerary() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
         const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.$route.params.id}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         })
         
         if (response.ok) {
@@ -746,6 +705,10 @@ export default {
       }
     },
     
+    // =============================================================================
+    // EDIT MODE MANAGEMENT
+    // =============================================================================
+    
     toggleEditMode() {
       this.editMode = !this.editMode
       if (this.editMode) {
@@ -753,6 +716,8 @@ export default {
       } else {
         this.cancelActivityEdit()
         this.showDateWarning = false
+        this.showDayMenu = null
+        this.showActivityMenu = null
       }
     },
     
@@ -772,11 +737,78 @@ export default {
       }
     },
     
+    async saveChanges() {
+      this.saving = true
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      
+      try {
+        if (new Date(this.editForm.endDate) <= new Date(this.editForm.startDate)) {
+          this.showNotification('End date must be after start date.', 'error')
+          this.saving = false
+          return
+        }
+        
+        const updatePayload = {
+          title: this.editForm.title,
+          destination: this.editForm.destination,
+          startDate: this.editForm.startDate,
+          endDate: this.editForm.endDate,
+          preferences: {
+            interests: [...this.editForm.interests],
+            pace: this.editForm.pace,
+            accommodation: this.itinerary.preferences?.accommodation || '',
+          },
+          budget: this.getBudgetValue(this.editForm.budget),
+          notes: this.editForm.notes,
+          days: this.currentDays
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(updatePayload)
+        })
+        
+        if (response.ok) {
+          const updatedItinerary = await response.json()
+          this.itinerary = updatedItinerary
+          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+          this.originalDuration = this.tripDuration
+          this.editMode = false
+          this.showDateWarning = false
+          this.showNotification('Itinerary updated successfully! 🎉', 'success')
+        } else {
+          const errorData = await response.json()
+          this.showNotification(errorData.message || 'Failed to save changes.', 'error')
+        }
+      } catch (error) {
+        console.error('Error saving changes:', error)
+        this.showNotification('Failed to save changes. Please try again.', 'error')
+      } finally {
+        this.saving = false
+      }
+    },
+    
+    cancelChanges() {
+      if (confirm('Are you sure you want to cancel your changes?')) {
+        this.itinerary = JSON.parse(JSON.stringify(this.originalItinerary))
+        this.editMode = false
+        this.showDateWarning = false
+        this.editingActivity = null
+      }
+    },
+    
+    // =============================================================================
+    // DATE MANAGEMENT
+    // =============================================================================
+    
     handleDateChange() {
       if (!this.editForm.startDate || !this.editForm.endDate) return
       
       this.newDuration = this.tripDuration
-      
       if (this.newDuration !== this.originalDuration) {
         this.showDateWarning = true
       } else {
@@ -786,7 +818,7 @@ export default {
     
     acceptDateChange() {
       this.showDateWarning = false
-      // The workingDays computed property will handle the new structure
+      this.itinerary.days = this.generateDaysFromDates(this.editForm.startDate, this.editForm.endDate)
     },
     
     revertDateChange() {
@@ -812,7 +844,6 @@ export default {
         currentDate.setDate(start.getDate() + i)
         const dateStr = currentDate.toISOString().split('T')[0]
         
-        // Try to preserve activities from corresponding original day
         let dayActivities = []
         if (i < originalDays.length && originalDays[i]?.activities) {
           dayActivities = [...originalDays[i].activities]
@@ -826,6 +857,10 @@ export default {
       
       return newDays
     },
+    
+    // =============================================================================
+    // INTERESTS MANAGEMENT
+    // =============================================================================
     
     addInterest() {
       if (this.selectedInterest && !this.editForm.interests.includes(this.selectedInterest)) {
@@ -841,26 +876,29 @@ export default {
       }
     },
     
-    // Activity Management
+    // =============================================================================
+    // ACTIVITY MANAGEMENT
+    // =============================================================================
+    
     addActivity(dayIndex) {
-      const newActivity = {
-        time: '09:00',
-        activity: '',
-        location: this.itinerary.destination,
-        duration: '2 hours',
-        cost: 0,
-        notes: ''
-      }
+      const currentDestination = this.editMode ? this.editForm.destination : this.itinerary.destination
       
       this.editingActivity = {
         dayIndex,
-        actIndex: -1, // -1 indicates new activity
-        data: { ...newActivity }
+        actIndex: -1,
+        data: {
+          time: '09:00',
+          activity: '',
+          location: currentDestination,
+          duration: '2 hours',
+          cost: 0,
+          notes: ''
+        }
       }
     },
     
     editActivity(dayIndex, actIndex) {
-      const activity = this.workingDays[dayIndex].activities[actIndex]
+      const activity = this.currentDays[dayIndex].activities[actIndex]
       this.editingActivity = {
         dayIndex,
         actIndex,
@@ -873,24 +911,20 @@ export default {
       
       const { dayIndex, actIndex, data } = this.editingActivity
       
-      // Validation
       if (!data.activity || !data.location || !data.time) {
         this.showNotification('Please fill in all required fields', 'error')
         return
       }
       
-      // Ensure cost is a number
       data.cost = Number(data.cost) || 0
       
       if (actIndex === -1) {
-        // Adding new activity
-        if (!this.workingDays[dayIndex].activities) {
-          this.workingDays[dayIndex].activities = []
+        if (!this.currentDays[dayIndex].activities) {
+          this.currentDays[dayIndex].activities = []
         }
-        this.workingDays[dayIndex].activities.push(data)
+        this.currentDays[dayIndex].activities.push(data)
       } else {
-        // Editing existing activity
-        this.workingDays[dayIndex].activities[actIndex] = data
+        this.currentDays[dayIndex].activities[actIndex] = data
       }
       
       this.editingActivity = null
@@ -903,104 +937,302 @@ export default {
     
     deleteActivity(dayIndex, actIndex) {
       if (confirm('Are you sure you want to delete this activity?')) {
-        this.workingDays[dayIndex].activities.splice(actIndex, 1)
+        this.currentDays[dayIndex].activities.splice(actIndex, 1)
         this.showNotification('Activity deleted', 'info')
       }
     },
     
-    async saveChanges() {
-      this.saving = true
+    isEditingActivity(dayIndex, actIndex) {
+      return this.editingActivity?.dayIndex === dayIndex && this.editingActivity?.actIndex === actIndex
+    },
+    
+    // =============================================================================
+    // AI FEATURES
+    // =============================================================================
+    
+    toggleDayMenu(dayIndex) {
+      this.showDayMenu = this.showDayMenu === dayIndex ? null : dayIndex
+      this.showActivityMenu = null
+    },
+    
+    toggleActivityMenu(dayIndex, actIndex) {
+      const menuKey = `${dayIndex}-${actIndex}`
+      this.showActivityMenu = this.showActivityMenu === menuKey ? null : menuKey
+      this.showDayMenu = null
+    },
+    
+    getCurrentValues() {
+      return {
+        destination: this.editMode ? this.editForm.destination : this.itinerary.destination,
+        startDate: this.editMode ? this.editForm.startDate : this.itinerary.startDate.split('T')[0],
+        endDate: this.editMode ? this.editForm.endDate : this.itinerary.endDate.split('T')[0],
+        interests: this.editMode ? this.editForm.interests : (this.itinerary.preferences?.interests || []),
+        budget: this.editMode ? this.editForm.budget : this.getBudgetPreference(this.itinerary.budget),
+        pace: this.editMode ? this.editForm.pace : (this.itinerary.preferences?.pace || 'moderate')
+      }
+    },
+    
+    async regenerateEntireItinerary() {
+      if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
+        return
+      }
+      
+      this.generatingAI = true
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       
       try {
-        // Validate dates
-        if (new Date(this.editForm.endDate) <= new Date(this.editForm.startDate)) {
-          this.showNotification('End date must be after start date.', 'error')
-          this.saving = false
-          return
-        }
+        this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
         
-        // Prepare update payload
-        const updatePayload = {
-          title: this.editForm.title,
-          destination: this.editForm.destination,
-          startDate: this.editForm.startDate,
-          endDate: this.editForm.endDate,
-          preferences: {
-            interests: [...this.editForm.interests],
-            pace: this.editForm.pace,
-            accommodation: this.itinerary.preferences?.accommodation || '',
-          },
-          budget: this.getBudgetValue(this.editForm.budget),
-          notes: this.editForm.notes,
-          days: this.workingDays
-        }
+        const currentValues = this.getCurrentValues()
         
-        // Make API call
-        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-          method: 'PUT',
+        const response = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
-          body: JSON.stringify(updatePayload)
+          body: JSON.stringify(currentValues)
         })
         
         if (response.ok) {
-          const updatedItinerary = await response.json()
-          this.itinerary = updatedItinerary
-          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
-          this.originalDuration = this.tripDuration
-          this.editMode = false
-          this.showDateWarning = false
+          const newItinerary = await response.json()
           
-          this.showNotification('Itinerary updated successfully! 🎉', 'success')
+          if (this.editMode) {
+            this.itinerary.days = newItinerary.days
+            this.showNotification('✨ Itinerary regenerated! Remember to save your changes.', 'success')
+          } else {
+            const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify({
+                ...this.itinerary,
+                days: newItinerary.days,
+                aiGenerated: true,
+                updatedAt: new Date()
+              })
+            })
+            
+            if (updateResponse.ok) {
+              const finalItinerary = await updateResponse.json()
+              this.itinerary = finalItinerary
+              this.originalItinerary = JSON.parse(JSON.stringify(finalItinerary))
+              this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+            }
+          }
         } else {
           const errorData = await response.json()
-          this.showNotification(errorData.message || 'Failed to save changes.', 'error')
+          this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
+        }
+      } catch (error) {
+        console.error('Error regenerating itinerary:', error)
+        this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
+      } finally {
+        this.generatingAI = false
+      }
+    },
+    
+    async generateAIActivities(dayIndex) {
+      this.generatingAI = true
+      this.showDayMenu = null
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      
+      try {
+        this.showNotification('🤖 Generating AI activities for this day...', 'info')
+        
+        const day = this.currentDays[dayIndex]
+        const currentValues = this.getCurrentValues()
+        const activityCount = currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'
+        
+        const prompt = `Generate ${activityCount} activities for Day ${dayIndex + 1} of a trip to ${currentValues.destination}.
+
+Date: ${day.date}
+Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
+Budget: ${currentValues.budget}
+Pace: ${currentValues.pace}
+
+Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
+
+        const response = await fetch(`${API_BASE_URL}/api/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            message: prompt,
+            itineraryId: this.itinerary._id
+          })
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          const aiData = this.parseAIResponse(result.response)
+          
+          if (aiData?.activities) {
+            const shouldReplace = day.activities?.length > 0 ? 
+              confirm(`This day has ${day.activities.length} existing activities. Replace them?`) : true
+            
+            if (shouldReplace) {
+              this.currentDays[dayIndex].activities = aiData.activities
+            } else {
+              this.currentDays[dayIndex].activities = [
+                ...(this.currentDays[dayIndex].activities || []),
+                ...aiData.activities
+              ]
+            }
+            
+            this.showNotification('✨ AI activities generated successfully!', 'success')
+          }
+        }
+      } catch (error) {
+        console.error('Error generating AI activities:', error)
+        this.showNotification('Failed to generate AI activities. Please try again.', 'error')
+      } finally {
+        this.generatingAI = false
+      }
+    },
+    
+    async enhanceActivity(dayIndex, actIndex) {
+      this.generatingAI = true
+      this.showActivityMenu = null
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      
+      try {
+        const activity = this.currentDays[dayIndex].activities[actIndex]
+        this.showNotification('🤖 Enhancing activity with AI...', 'info')
+        
+        const currentValues = this.getCurrentValues()
+        
+        const prompt = `Enhance this activity: ${activity.activity} at ${activity.location}.
+Destination: ${currentValues.destination}
+Interests: ${currentValues.interests.join(', ')}
+Budget: ${currentValues.budget}
+
+Return JSON: {"time": "${activity.time}", "activity": "Enhanced name", "location": "Better location", "duration": "${activity.duration}", "cost": 30, "notes": "Helpful tips"}`
+
+        const response = await fetch(`${API_BASE_URL}/api/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            message: prompt,
+            itineraryId: this.itinerary._id
+          })
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          const enhancedActivity = this.parseAIResponse(result.response)
+          
+          if (enhancedActivity) {
+            this.currentDays[dayIndex].activities[actIndex] = {
+              ...this.currentDays[dayIndex].activities[actIndex],
+              ...enhancedActivity,
+              cost: Number(enhancedActivity.cost) || activity.cost
+            }
+            this.showNotification('✨ Activity enhanced with AI!', 'success')
+          }
+        }
+      } catch (error) {
+        console.error('Error enhancing activity:', error)
+        this.showNotification('Failed to enhance activity. Please try again.', 'error')
+      } finally {
+        this.generatingAI = false
+      }
+    },
+    
+    async generateAlternatives(dayIndex, actIndex) {
+      this.generatingAI = true
+      this.showActivityMenu = null
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      
+      try {
+        const activity = this.currentDays[dayIndex].activities[actIndex]
+        this.showNotification('🤖 Finding alternative activities...', 'info')
+        
+        const currentValues = this.getCurrentValues()
+        
+        const prompt = `Suggest 3 alternatives to: ${activity.activity}
+Destination: ${currentValues.destination}
+Interests: ${currentValues.interests.join(', ')}
+Budget: ${currentValues.budget}
+Time: ${activity.time}, Duration: ${activity.duration}
+
+Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1", "location": "Place", "duration": "${activity.duration}", "cost": 25, "notes": "Why good"}]}`
+
+        const response = await fetch(`${API_BASE_URL}/api/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            message: prompt,
+            itineraryId: this.itinerary._id
+          })
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          const alternativesData = this.parseAIResponse(result.response)
+          
+          if (alternativesData?.alternatives) {
+            this.showAlternativesModal(dayIndex, actIndex, alternativesData.alternatives)
+          }
+        }
+      } catch (error) {
+        console.error('Error generating alternatives:', error)
+        this.showNotification('Failed to generate alternatives. Please try again.', 'error')
+      } finally {
+        this.generatingAI = false
+      }
+    },
+    
+    optimizeDay(dayIndex) {
+      this.showDayMenu = null
+      const day = this.currentDays[dayIndex]
+      
+      if (!day.activities || day.activities.length <= 1) {
+        this.showNotification('Need at least 2 activities to optimize', 'info')
+        return
+      }
+      
+      day.activities.sort((a, b) => this.timeToMinutes(a.time) - this.timeToMinutes(b.time))
+      
+      let currentTime = this.timeToMinutes(day.activities[0].time)
+      const travelBuffer = 30
+      
+      day.activities.forEach((activity, index) => {
+        if (index > 0) {
+          const prevActivity = day.activities[index - 1]
+          const prevDuration = this.getDurationInMinutes(prevActivity.duration)
+          const prevEndTime = this.timeToMinutes(prevActivity.time) + prevDuration
+          currentTime = Math.max(currentTime, prevEndTime + travelBuffer)
         }
         
-      } catch (error) {
-        console.error('Error saving changes:', error)
-        this.showNotification('Failed to save changes. Please try again.', 'error')
-      } finally {
-        this.saving = false
+        activity.time = this.minutesToTime(currentTime)
+        currentTime += this.getDurationInMinutes(activity.duration)
+      })
+      
+      this.showNotification('⚡ Day schedule optimized!', 'success')
+    },
+    
+    clearDay(dayIndex) {
+      this.showDayMenu = null
+      if (confirm('Are you sure you want to clear all activities for this day?')) {
+        this.currentDays[dayIndex].activities = []
+        this.showNotification('Day cleared', 'info')
       }
     },
     
-    cancelChanges() {
-      if (confirm('Are you sure you want to cancel your changes?')) {
-        this.itinerary = JSON.parse(JSON.stringify(this.originalItinerary))
-        this.editMode = false
-        this.showDateWarning = false
-        this.editingActivity = null
-      }
-    },
-    
-    getBudgetValue(budgetPreference) {
-      const budgetMap = {
-        'budget': 1000,
-        'mid-range': 2500,
-        'luxury': 5000
-      }
-      return budgetMap[budgetPreference] || 2500
-    },
-    
-    getBudgetPreference(budgetValue) {
-      if (budgetValue <= 1000) return 'budget'
-      if (budgetValue <= 2500) return 'mid-range'
-      return 'luxury'
-    },
-    
-    getBudgetLabel(budgetValue) {
-      const preference = this.getBudgetPreference(budgetValue)
-      const labels = {
-        'budget': 'Budget',
-        'mid-range': 'Mid-range', 
-        'luxury': 'Luxury'
-      }
-      return labels[preference] || 'Mid-range'
-    },
+    // =============================================================================
+    // SHARING & EXPORT
+    // =============================================================================
     
     shareItinerary() {
       this.showShareModal = true
@@ -1011,7 +1243,6 @@ export default {
         await navigator.clipboard.writeText(this.shareUrl)
         this.showNotification('Link copied to clipboard! 📋', 'success')
       } catch (error) {
-        // Fallback for older browsers
         const textArea = document.createElement('textarea')
         textArea.value = this.shareUrl
         document.body.appendChild(textArea)
@@ -1044,7 +1275,6 @@ export default {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      
       this.showNotification('Itinerary exported successfully! 📄', 'success')
     },
     
@@ -1055,9 +1285,7 @@ export default {
       content += `Duration: ${this.tripDuration} days\n`
       content += `Estimated Cost: ${this.estimatedCost}\n\n`
       
-      const days = this.editMode ? this.workingDays : this.itinerary.days
-      
-      days.forEach((day, index) => {
+      this.currentDays.forEach((day, index) => {
         content += `=== DAY ${index + 1} - ${this.formatDayDate(day.date)} ===\n\n`
         
         if (day.activities && day.activities.length > 0) {
@@ -1075,6 +1303,118 @@ export default {
       })
       
       return content
+    },
+    
+    // =============================================================================
+    // UTILITY FUNCTIONS
+    // =============================================================================
+    
+    parseAIResponse(response) {
+      try {
+        let jsonStr = response.trim()
+        jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '')
+        
+        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          jsonStr = jsonMatch[0]
+        }
+        
+        return JSON.parse(jsonStr)
+      } catch (error) {
+        console.error('Error parsing AI response:', error)
+        return null
+      }
+    },
+    
+    showAlternativesModal(dayIndex, actIndex, alternatives) {
+      const originalActivity = this.currentDays[dayIndex].activities[actIndex]
+      
+      const modal = document.createElement('div')
+      modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'
+      
+      modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-xl border p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Choose Alternative Activity</h3>
+            <button class="close-modal text-gray-400 hover:text-gray-600">❌</button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded-lg border-l-4 border-gray-400">
+              <h4 class="font-medium text-gray-900 mb-2">Current Activity</h4>
+              <p class="text-sm text-gray-600">${originalActivity.activity} at ${originalActivity.location}</p>
+            </div>
+            
+            ${alternatives.map((alt, index) => `
+              <button class="alternative-option w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all" data-index="${index}">
+                <div class="flex justify-between items-start mb-2">
+                  <h4 class="font-medium text-gray-900">${alt.activity}</h4>
+                  <span class="text-sm font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">${alt.cost}</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">${alt.location}</p>
+                <p class="text-xs text-gray-500">${alt.notes}</p>
+              </button>
+            `).join('')}
+            
+            <button class="keep-original w-full p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all">
+              <div class="text-center">
+                <h4 class="font-medium text-gray-900">Keep Original Activity</h4>
+                <p class="text-sm text-gray-600">No changes needed</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      `
+      
+      document.body.appendChild(modal)
+      
+      // Event listeners
+      modal.querySelector('.close-modal').addEventListener('click', () => modal.remove())
+      modal.querySelector('.keep-original').addEventListener('click', () => modal.remove())
+      
+      modal.querySelectorAll('.alternative-option').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = parseInt(button.dataset.index)
+          const selectedAlternative = alternatives[index]
+          
+          this.currentDays[dayIndex].activities[actIndex] = {
+            ...selectedAlternative,
+            cost: Number(selectedAlternative.cost) || 0
+          }
+          
+          this.showNotification(`✨ Activity replaced with: ${selectedAlternative.activity}`, 'success')
+          modal.remove()
+        })
+      })
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove()
+      })
+    },
+    
+    getBudgetValue(budgetPreference) {
+      const budgetMap = {
+        'budget': 1000,
+        'mid-range': 2500,
+        'luxury': 5000
+      }
+      return budgetMap[budgetPreference] || 2500
+    },
+    
+    getBudgetPreference(budgetValue) {
+      if (budgetValue <= 1000) return 'budget'
+      if (budgetValue <= 2500) return 'mid-range'
+      return 'luxury'
+    },
+    
+    getBudgetLabel(budgetValue) {
+      const preference = this.getBudgetPreference(budgetValue)
+      const labels = {
+        'budget': 'Budget',
+        'mid-range': 'Mid-range', 
+        'luxury': 'Luxury'
+      }
+      return labels[preference] || 'Mid-range'
     },
     
     formatDate(dateString) {
@@ -1119,31 +1459,12 @@ export default {
     
     getActivityCategory(activity) {
       const categories = {
-        'museum': 'Culture',
-        'temple': 'Culture',
-        'shrine': 'Culture',
-        'food': 'Food',
-        'market': 'Food',
-        'restaurant': 'Food',
-        'cafe': 'Food',
-        'dining': 'Food',
-        'park': 'Nature',
-        'garden': 'Nature',
-        'beach': 'Nature',
-        'hiking': 'Adventure',
-        'trek': 'Adventure',
-        'climbing': 'Adventure',
-        'shopping': 'Shopping',
-        'mall': 'Shopping',
-        'store': 'Shopping',
-        'art': 'Art',
-        'gallery': 'Art',
-        'theater': 'Entertainment',
-        'cinema': 'Entertainment',
-        'show': 'Entertainment',
-        'tour': 'Sightseeing',
-        'visit': 'Sightseeing',
-        'explore': 'Sightseeing'
+        'museum': 'Culture', 'temple': 'Culture', 'shrine': 'Culture',
+        'food': 'Food', 'market': 'Food', 'restaurant': 'Food',
+        'park': 'Nature', 'garden': 'Nature', 'beach': 'Nature',
+        'hiking': 'Adventure', 'trek': 'Adventure', 'climbing': 'Adventure',
+        'shopping': 'Shopping', 'mall': 'Shopping', 'store': 'Shopping',
+        'art': 'Art', 'gallery': 'Art', 'theater': 'Entertainment'
       }
       
       const lowerActivity = activity.toLowerCase()
@@ -1155,12 +1476,28 @@ export default {
       return 'General'
     },
     
+    getDurationInMinutes(duration) {
+      if (!duration) return 120
+      const match = duration.match(/(\d+(?:\.\d+)?)\s*(hour|hr|h)/i)
+      return match ? parseFloat(match[1]) * 60 : 120
+    },
+    
+    timeToMinutes(timeString) {
+      if (!timeString) return 0
+      const [hours, minutes] = timeString.split(':').map(Number)
+      return hours * 60 + minutes
+    },
+    
+    minutesToTime(minutes) {
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
+    },
+    
     showNotification(message, type = 'info') {
-      // Create notification element
       const notification = document.createElement('div')
       notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full`
       
-      // Set styling based on type
       const styles = {
         success: 'bg-green-500 text-white',
         error: 'bg-red-500 text-white',
@@ -1176,24 +1513,91 @@ export default {
         </div>
       `
       
-      // Add to DOM
       document.body.appendChild(notification)
       
-      // Animate in
       setTimeout(() => {
         notification.style.transform = 'translateX(0)'
       }, 100)
       
-      // Auto remove after 5 seconds
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)'
-        setTimeout(() => {
+        notification.addEventListener('transitionend', () => {
           if (notification.parentElement) {
             notification.remove()
           }
-        }, 300)
+        })
       }, 5000)
     }
   }
 }
 </script>
+
+<style scoped>
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus states */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgb(59 130 246);
+  border-color: rgb(59 130 246);
+}
+
+/* Hover effects */
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Loading animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+</style>
