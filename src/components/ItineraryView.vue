@@ -18,7 +18,7 @@
     <div v-else-if="itinerary" class="max-w-5xl mx-auto px-4 py-8">
       <!-- Header Section -->
       <div class="bg-white rounded-xl shadow-sm border p-8 mb-8">
-        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
+        <div class="flex flex-col lg:items-start lg:justify-between gap-8">
           <!-- Trip Info -->
           <div class="flex-1">
             <!-- Title -->
