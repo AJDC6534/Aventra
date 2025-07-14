@@ -555,10 +555,13 @@ export default {
         destination: '',
         startDate: '',
         endDate: '',
+        departureTime: '',
+        arrivalTime: '',
         interests: [],
         budget: 'mid-range',
         pace: 'moderate',
-        notes: ''
+        notes: '',
+        includePhotos: true
       },
       availableInterests: [
         { value: 'Culture', label: 'Culture', icon: '🏛️' },
@@ -626,7 +629,10 @@ export default {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
-          body: JSON.stringify(this.form)
+          body: JSON.stringify({
+            ...this.form,
+          includePhotos:true
+          })
         })
         
         const data = await response.json()
@@ -750,7 +756,7 @@ export default {
     // Set default times
     this.form.departureTime = '09:00';
     this.form.arrivalTime = '18:00';
-    
+
   }
 }
 </script>
