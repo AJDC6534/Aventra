@@ -389,7 +389,7 @@
                 :class="{ 'border-blue-300 bg-blue-50': isEditingActivity(dayIndex, actIndex) }"
               >
                 <!-- Activity Photo -->
-                <div v-if="getActivityPhoto(activity)" class="overflow-hidden">
+                <div v-if="getActivityPhoto(activity)" class="overflow-hidden relative">
                   <img 
                     :src="getActivityPhoto(activity).url" 
                     :alt="getActivityPhoto(activity).description"
