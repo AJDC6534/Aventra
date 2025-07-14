@@ -1138,66 +1138,74 @@ export default {
     },
     
     async regenerateEntireItinerary() {
-      if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
-        return
-      }
+  if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
+    return
+  }
+  
+  this.generatingAI = true
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
+    
+    const currentValues = this.getCurrentValues()
+    
+    // First, generate new itinerary data
+    const generateResponse = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        destination: currentValues.destination,
+        startDate: currentValues.startDate,
+        endDate: currentValues.endDate,
+        interests: currentValues.interests,
+        budget: this.getBudgetValue(currentValues.budget),
+        pace: currentValues.pace
+      })
+    })
+    
+    if (generateResponse.ok) {
+      const newItineraryData = await generateResponse.json()
       
-      this.generatingAI = true
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
-      
-      try {
-        this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
-        
-        const currentValues = this.getCurrentValues()
-        
-        const response = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(currentValues)
+      // Now update the existing itinerary with the new data
+      const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          ...this.itinerary,
+          days: newItineraryData.days,
+          aiGenerated: true,
+          updatedAt: new Date()
         })
-        
-        if (response.ok) {
-          const newItinerary = await response.json()
-          
-          if (this.editMode) {
-            this.itinerary.days = newItinerary.days
-            this.showNotification('✨ Itinerary regenerated! Remember to save your changes.', 'success')
-          } else {
-            const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({
-                ...this.itinerary,
-                days: newItinerary.days,
-                aiGenerated: true,
-                updatedAt: new Date()
-              })
-            })
-            
-            if (updateResponse.ok) {
-              const finalItinerary = await updateResponse.json()
-              this.itinerary = finalItinerary
-              this.originalItinerary = JSON.parse(JSON.stringify(finalItinerary))
-              this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
-            }
-          }
-        } else {
-          const errorData = await response.json()
-          this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
-        }
-      } catch (error) {
-        console.error('Error regenerating itinerary:', error)
-        this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
-      } finally {
-        this.generatingAI = false
+      })
+      
+      if (updateResponse.ok) {
+        const updatedItinerary = await updateResponse.json()
+        this.itinerary = updatedItinerary
+        this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+        this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+      } else {
+        const errorData = await updateResponse.json()
+        this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
       }
-    },
+      
+    } else {
+      const errorData = await response.json()
+      this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
+    }
+  } catch (error) {
+    console.error('Error regenerating itinerary:', error)
+    this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
+  } finally {
+    this.generatingAI = false
+  }
+},
 
      async generateAIActivities(dayIndex) {
     this.generatingAI = true
