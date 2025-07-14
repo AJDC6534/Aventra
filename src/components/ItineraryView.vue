@@ -1150,49 +1150,82 @@ export default {
     
     const currentValues = this.getCurrentValues()
     
-    // First, generate new itinerary data
-    const generateResponse = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
+    // Use the AI chat endpoint to generate new days instead of creating a new itinerary
+    const prompt = `Generate a complete ${this.tripDuration}-day itinerary for ${currentValues.destination}.
+
+Trip Details:
+- Destination: ${currentValues.destination}
+- Start Date: ${currentValues.startDate}
+- End Date: ${currentValues.endDate}
+- Duration: ${this.tripDuration} days
+- Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
+- Budget: ${currentValues.budget}
+- Pace: ${currentValues.pace}
+
+Return ONLY a JSON object with this structure:
+{
+  "days": [
+    {
+      "date": "2024-01-15",
+      "activities": [
+        {
+          "time": "09:00",
+          "activity": "Activity name",
+          "location": "Location name",
+          "duration": "2 hours",
+          "cost": 25,
+          "notes": "Any helpful notes"
+        }
+      ]
+    }
+  ]
+}
+
+Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'} activities per day.`
+
+    const aiResponse = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
       body: JSON.stringify({
-        destination: currentValues.destination,
-        startDate: currentValues.startDate,
-        endDate: currentValues.endDate,
-        interests: currentValues.interests,
-        budget: this.getBudgetValue(currentValues.budget),
-        pace: currentValues.pace
+        message: prompt,
+        itineraryId: this.itinerary._id
       })
     })
     
-    if (generateResponse.ok) {
-      const newItineraryData = await generateResponse.json()
+    if (aiResponse.ok) {
+      const result = await aiResponse.json()
+      const newItineraryData = this.parseAIResponse(result.response)
       
-      // Now update the existing itinerary with the new data
-      const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          ...this.itinerary,
-          days: newItineraryData.days,
-          aiGenerated: true,
-          updatedAt: new Date()
+      if (newItineraryData && newItineraryData.days) {
+        // Now update the existing itinerary with the new data
+        const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            ...this.itinerary,
+            days: newItineraryData.days,
+            aiGenerated: true,
+            updatedAt: new Date()
+          })
         })
-      })
-      
-      if (updateResponse.ok) {
-        const updatedItinerary = await updateResponse.json()
-        this.itinerary = updatedItinerary
-        this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
-        this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+        
+        if (updateResponse.ok) {
+          const updatedItinerary = await updateResponse.json()
+          this.itinerary = updatedItinerary
+          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+          this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+        } else {
+          const errorData = await updateResponse.json()
+          this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
+        }
       } else {
-        const errorData = await updateResponse.json()
-        this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
+        this.showNotification('Failed to parse AI response. Please try again.', 'error')
       }
       
     } else {
