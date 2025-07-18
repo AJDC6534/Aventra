@@ -1240,93 +1240,66 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
   }
 },
 
-     async regenerateEntireItinerary() {
-  if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
-    return
-  }
-  
-  this.generatingAI = true
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
-  
-  try {
-    this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
+     async generateAIActivities(dayIndex) {
+    this.generatingAI = true
+    this.showDayMenu = null
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
     
-    const currentValues = this.getCurrentValues()
-    
-    // Step 1: Generate new itinerary with photos using the proper endpoint
-    const generateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${itineraryId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({
-        destination: currentValues.destination,
-        startDate: currentValues.startDate,
-        endDate: currentValues.endDate,
-        interests: currentValues.interests,
-        budget: currentValues.budget,
-        pace: currentValues.pace,
-        includePhotos: this.itinerary.photosEnabled || true // Include photos if they were enabled before
-      })
-    })
-    
-    if (generateResponse.ok) {
-      const newItinerary = await generateResponse.json()
+    try {
+      this.showNotification('🤖 Generating AI activities for this day...', 'info')
       
-      // Step 2: Update the current itinerary with the new data (including photos)
-      const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-        method: 'PUT',
+      const day = this.currentDays[dayIndex]
+      const currentValues = this.getCurrentValues()
+      const activityCount = currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'
+      
+      const prompt = `Generate ${activityCount} activities for Day ${dayIndex + 1} of a trip to ${currentValues.destination}.
+
+Date: ${day.date}
+Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
+Budget: ${currentValues.budget}
+Pace: ${currentValues.pace}
+
+Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
+
+      const response = await fetch(`${API_BASE_URL}/api/generate-itinerary/:id`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
-          title: this.editMode ? this.editForm.title : `AI-Generated Trip to ${currentValues.destination}`,
-          destination: currentValues.destination,
-          startDate: currentValues.startDate,
-          endDate: currentValues.endDate,
-          preferences: {
-            interests: currentValues.interests,
-            pace: currentValues.pace,
-            accommodation: this.itinerary.preferences?.accommodation || ''
-          },
-          budget: this.getBudgetValue(currentValues.budget),
-          days: newItinerary.days, // New activities with photos
-          destinationPhotos: newItinerary.destinationPhotos || [], // New destination photos
-          photosEnabled: newItinerary.photosEnabled || this.itinerary.photosEnabled,
-          aiGenerated: true,
-          updatedAt: new Date()
+          message: prompt,
+          itineraryId: this.itinerary._id
         })
       })
       
-      if (updateResponse.ok) {
-        const updatedItinerary = await updateResponse.json()
-        this.itinerary = updatedItinerary
-        this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+      if (response.ok) {
+        const result = await response.json()
+        const aiData = this.parseAIResponse(result.response)
         
-        // Update edit form if in edit mode
-        if (this.editMode) {
-          this.populateEditForm()
+        if (aiData?.activities) {
+          const shouldReplace = day.activities?.length > 0 ? 
+            confirm(`This day has ${day.activities.length} existing activities. Replace them?`) : true
+          
+          if (shouldReplace) {
+            this.currentDays[dayIndex].activities = aiData.activities
+          } else {
+            this.currentDays[dayIndex].activities = [
+              ...(this.currentDays[dayIndex].activities || []),
+              ...aiData.activities
+            ]
+          }
+          
+          this.showNotification('✨ AI activities generated successfully!', 'success')
         }
-        
-        this.showNotification('✨ Itinerary completely regenerated with AI and photos!', 'success')
-      } else {
-        const errorData = await updateResponse.json()
-        this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
       }
-    } else {
-      const errorData = await generateResponse.json()
-      this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
+    } catch (error) {
+      console.error('Error generating AI activities:', error)
+      this.showNotification('Failed to generate AI activities. Please try again.', 'error')
+    } finally {
+      this.generatingAI = false
     }
-    
-  } catch (error) {
-    console.error('Error regenerating itinerary:', error)
-    this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
-  } finally {
-    this.generatingAI = false
-  }
-},
+  },
     
     async enhanceActivity(dayIndex, actIndex) {
     this.generatingAI = true
