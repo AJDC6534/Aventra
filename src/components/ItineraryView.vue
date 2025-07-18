@@ -1201,7 +1201,7 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
       
       if (newItineraryData && newItineraryData.days) {
         // Now update the existing itinerary with the new data
-        const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1476,7 +1476,7 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${this.itinerary.destination}-itinerary.txt`
+    a.download = `${this.itinerary.destination}-itinerary.pdf`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
