@@ -1261,8 +1261,8 @@ Pace: ${currentValues.pace}
 
 Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
 
-      const response = await fetch(`${API_BASE_URL}/api/generate-itinerary/:id`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/:id`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
