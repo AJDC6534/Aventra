@@ -1517,13 +1517,15 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     
      parseAIResponse(aiResponse) {
   try {
-    // Clean up Markdown-style ```json ... ``` if present
-    const cleaned = aiResponse
+    let cleaned = aiResponse
       .trim()
-      .replace(/^```json\s*/i, '') // Remove starting ```json
-      .replace(/^```/, '')         // Just in case someone uses only ```
-      .replace(/```$/, '')         // Remove ending ```
+      .replace(/^```json\s*/i, '') // strip ```json
+      .replace(/^```/, '')
+      .replace(/```$/, '')
       .trim();
+
+    // Replace `cost: Variable` with a default value
+    cleaned = cleaned.replace(/"cost"\s*:\s*Variable/g, '"cost": 0');
 
     return JSON.parse(cleaned);
   } catch (err) {
