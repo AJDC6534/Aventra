@@ -1479,6 +1479,7 @@ async generateActivityPhotosManually() {
     
     const currentValues = this.getCurrentValues()
     const activitiesPerDay = currentValues.pace === 'relaxed' ? 3 : currentValues.pace === 'active' ? 5 : 4
+    const photosWereEnabled = this.itinerary.photosEnabled
     
     // Create a more structured prompt for better AI response
     const prompt = `Generate a complete ${this.tripDuration}-day itinerary for ${currentValues.destination}.
@@ -1533,7 +1534,7 @@ Generate exactly ${this.tripDuration} days, each with ${activitiesPerDay} activi
     const result = await aiResponse.json()
     console.log('AI Response:', result.response) // Debug log
     
-    // Parse the AI response more robustly
+    // Parse the AI response
     const newItineraryData = this.parseAIResponse(result.response)
     
     if (!newItineraryData || !newItineraryData.days || !Array.isArray(newItineraryData.days)) {
@@ -1573,11 +1574,13 @@ Generate exactly ${this.tripDuration} days, each with ${activitiesPerDay} activi
       budget: this.getBudgetValue(currentValues.budget),
       days: daysWithDates,
       aiGenerated: true,
-      photosEnabled: this.itinerary.photosEnabled || false,
+      photosEnabled: false, // Temporarily disable photos
       updatedAt: new Date().toISOString()
     }
     
-    // Update the itinerary
+    // Update the itinerary first
+    this.showNotification('💾 Saving regenerated itinerary...', 'info')
+    
     const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
       method: 'PUT',
       headers: {
@@ -1594,11 +1597,18 @@ Generate exactly ${this.tripDuration} days, each with ${activitiesPerDay} activi
     
     let updatedItinerary = await updateResponse.json()
     
-    // If photos are enabled, add photos to the regenerated itinerary
-    if (this.itinerary.photosEnabled) {
-      this.showNotification('📸 Adding photos to regenerated itinerary...', 'info')
-      
+    // Update local state first
+    this.itinerary = updatedItinerary
+    this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+    
+    this.showNotification('✨ Itinerary regenerated with AI! Adding photos...', 'success')
+    
+    // Now add photos if they were enabled before
+    if (photosWereEnabled) {
       try {
+        this.showNotification('📸 Adding photos to regenerated itinerary...', 'info')
+        
+        // Method 1: Try the backend photo addition endpoint
         const photoResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
           method: 'POST',
           headers: {
@@ -1608,29 +1618,66 @@ Generate exactly ${this.tripDuration} days, each with ${activitiesPerDay} activi
         
         if (photoResponse.ok) {
           const photoResult = await photoResponse.json()
-          updatedItinerary = photoResult.itinerary
-          this.showNotification(`📸 Added ${photoResult.photoCount} photos to regenerated itinerary!`, 'success')
+          this.itinerary = photoResult.itinerary
+          this.originalItinerary = JSON.parse(JSON.stringify(photoResult.itinerary))
+          
+          const activityPhotosCount = this.countActivityPhotos()
+          
+          if (activityPhotosCount > 0) {
+            this.showNotification(`📸 Added ${photoResult.activityPhotos || 0} activity photos and ${photoResult.fallbackPhotos || 0} fallback photos!`, 'success')
+          } else {
+            // Method 2: If backend didn't generate activity photos, try manual method
+            this.showNotification('📸 Generating activity photos manually...', 'info')
+            await this.generateActivityPhotosManually()
+          }
         } else {
-          console.warn('Failed to add photos to regenerated itinerary')
-          this.showNotification('⚠️ Itinerary regenerated but photos could not be added', 'warning')
+          // Method 3: If backend endpoint failed, generate all photos manually
+          this.showNotification('📸 Generating all photos manually...', 'info')
+          await this.generateAllPhotosManually()
         }
+        
       } catch (photoError) {
         console.warn('Error adding photos to regenerated itinerary:', photoError)
-        this.showNotification('⚠️ Itinerary regenerated but photos could not be added', 'warning')
+        this.showNotification('⚠️ Itinerary regenerated but some photos could not be added', 'warning')
+        
+        // Try one more time with manual generation
+        try {
+          await this.generateAllPhotosManually()
+        } catch (manualError) {
+          console.error('Manual photo generation also failed:', manualError)
+          this.showNotification('⚠️ Itinerary regenerated successfully, but photos could not be added', 'warning')
+        }
       }
+    } else {
+      this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
     }
-    
-    // Update the local state
-    this.itinerary = updatedItinerary
-    this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
-    
-    this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
     
   } catch (error) {
     console.error('Error regenerating itinerary:', error)
     this.showNotification(`Failed to regenerate itinerary: ${error.message}`, 'error')
   } finally {
     this.generatingAI = false
+  }
+},
+
+validatePhotosAdded() {
+  const activityPhotosCount = this.countActivityPhotos()
+  const destinationPhotosCount = this.itinerary?.destinationPhotos?.length || 0
+  const totalActivities = this.itinerary?.days?.reduce((total, day) => total + (day.activities?.length || 0), 0) || 0
+  
+  console.log('Photo validation:', {
+    activityPhotos: activityPhotosCount,
+    destinationPhotos: destinationPhotosCount,
+    totalActivities,
+    photosEnabled: this.itinerary?.photosEnabled,
+    coverage: totalActivities > 0 ? (activityPhotosCount / totalActivities * 100).toFixed(1) + '%' : '0%'
+  })
+  
+  return {
+    activityPhotos: activityPhotosCount,
+    destinationPhotos: destinationPhotosCount,
+    totalActivities,
+    coverage: totalActivities > 0 ? activityPhotosCount / totalActivities : 0
   }
 },
 
