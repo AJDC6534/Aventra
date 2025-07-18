@@ -1819,6 +1819,7 @@ export default {
       
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
+        // Update user location
         const response = await fetch(`${API_BASE_URL}/api/users/location`, {
           method: 'PUT',
           headers: {
@@ -1829,6 +1830,8 @@ export default {
         })
         
         if (response.ok) {
+          // Also create a check-in record
+          await this.createCheckIn(this.userLocation, 'safe', 'Location updated', true)
           this.showNotification('Location updated successfully! 📍', 'success')
         } else {
           throw new Error('Failed to update location')
@@ -1838,16 +1841,91 @@ export default {
         this.showNotification('Location updated locally! 📍 (Demo mode)', 'warning')
       }
     },
+
+    // Add this new method to create check-ins
+    async createCheckIn(location, status = 'safe', message = '', automatic = false) {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users/check-in`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            location,
+            status,
+            message,
+            automatic
+          })
+        })
+        
+        if (response.ok) {
+          console.log('✅ Check-in created successfully')
+          return await response.json()
+        } else {
+          throw new Error('Failed to create check-in')
+        }
+      } catch (error) {
+        console.error('❌ Check-in creation error:', error)
+        throw error
+      }
+    },
+
+    // Add manual check-in method
+    async performManualCheckIn() {
+      try {
+        await this.getCurrentLocation()
+        if (this.userLocation) {
+          await this.createCheckIn(this.userLocation, 'safe', 'Manual check-in', false)
+          this.showNotification('Check-in successful! ✅', 'success')
+        } else {
+          this.showNotification('Unable to get location for check-in', 'error')
+        }
+      } catch (error) {
+        console.error('Manual check-in error:', error)
+        this.showNotification('Check-in failed. Please try again.', 'error')
+      }
+    },
     
     async sendEmergencyAlert() {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       try {
+        // Validate emergency contacts first
+        const validContacts = this.safetyForm.emergencyContacts.filter(contact => {
+          return contact.name && contact.name.trim() && 
+                contact.phone && contact.phone.trim()
+        })
+        
+        if (validContacts.length === 0) {
+          this.showNotification('No valid emergency contacts found. Please add contacts first.', 'error')
+          return
+        }
+        
+        // Get current location if not available
+        if (!this.userLocation) {
+          await this.getCurrentLocation()
+        }
+        
+        // Prepare alert data
         const alertData = {
           type: this.emergencyType || 'other',
-          location: this.userLocation,
-          emergencyContacts: this.safetyForm.emergencyContacts.filter(contact => contact.name && contact.phone),
-          message: this.emergencyMessage
+          location: this.userLocation ? {
+            latitude: parseFloat(this.userLocation.latitude),
+            longitude: parseFloat(this.userLocation.longitude),
+            address: this.userLocation.address || `${this.userLocation.latitude}, ${this.userLocation.longitude}`,
+            accuracy: this.userLocation.accuracy || 0
+          } : null,
+          emergencyContacts: validContacts.map(contact => ({
+            name: contact.name.trim(),
+            phone: contact.phone.trim(),
+            email: contact.email ? contact.email.trim() : '',
+            relationship: contact.relationship || 'contact'
+          })),
+          message: this.emergencyMessage || 'Emergency alert - please respond'
         }
+        
+        console.log('🚨 Sending emergency alert:', alertData)
         
         const response = await fetch(`${API_BASE_URL}/api/emergency/alert`, {
           method: 'POST',
@@ -1859,16 +1937,21 @@ export default {
         })
         
         if (response.ok) {
-          this.showNotification('Emergency alert sent successfully! 🚨', 'success')
+          const result = await response.json()
+          console.log('✅ Emergency alert sent successfully:', result)
+          this.showNotification(`Emergency alert sent to ${validContacts.length} contacts! 🚨`, 'success')
           this.showEmergencyModal = false
           this.emergencyType = ''
           this.emergencyMessage = ''
         } else {
-          throw new Error('Failed to send emergency alert')
+          const errorData = await response.json()
+          console.error('❌ Emergency alert failed:', errorData)
+          throw new Error(errorData.message || 'Failed to send emergency alert')
         }
       } catch (error) {
-        console.error('Error sending emergency alert:', error)
-        this.showNotification('Emergency alert sent locally! 🚨 (Demo mode)', 'warning')
+        console.error('❌ Emergency alert error:', error)
+        this.showNotification(`Emergency alert error: ${error.message}`, 'error')
+        // In demo mode, still show as sent
         this.showEmergencyModal = false
         this.emergencyType = ''
         this.emergencyMessage = ''
