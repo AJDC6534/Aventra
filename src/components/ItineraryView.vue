@@ -1517,9 +1517,15 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     
      parseAIResponse(aiResponse) {
   try {
-    console.log('AI Response before parsing:', aiResponse);
-    const parsed = JSON.parse(aiResponse);
-    return parsed;
+    // Clean up Markdown-style ```json ... ``` if present
+    const cleaned = aiResponse
+      .trim()
+      .replace(/^```json\s*/i, '') // Remove starting ```json
+      .replace(/^```/, '')         // Just in case someone uses only ```
+      .replace(/```$/, '')         // Remove ending ```
+      .trim();
+
+    return JSON.parse(cleaned);
   } catch (err) {
     console.error('❌ Error parsing AI response:', err.message);
     throw err;
