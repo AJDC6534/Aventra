@@ -778,71 +778,400 @@ export default {
   // PHOTO MANAGEMENT METHODS
   // =============================================================================
   
-  getActivityPhoto(activity) {
-    return activity.photo || activity.fallbackPhoto || null
-  },
+ 
   
   async addPhotosToItinerary() {
-    this.addingPhotos = true
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
-    
-    try {
-      this.showNotification('📸 Adding photos to your itinerary...', 'info')
-      
-      const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      if (response.ok) {
-        const result = await response.json()
-        this.itinerary = result.itinerary
-        this.originalItinerary = JSON.parse(JSON.stringify(result.itinerary))
-        this.showNotification(`✨ Added ${result.photoCount} photos to your itinerary!`, 'success')
-      } else {
-        const errorData = await response.json()
-        this.showNotification(errorData.message || 'Failed to add photos', 'error')
-      }
-    } catch (error) {
-      console.error('Error adding photos:', error)
-      this.showNotification('Failed to add photos. Please try again.', 'error')
-    } finally {
-      this.addingPhotos = false
-    }
-  },
+  this.addingPhotos = true
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
   
-  async refreshActivityPhoto(dayIndex, actIndex) {
-    this.refreshingPhoto = true
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  try {
+    this.showNotification('📸 Adding photos to your itinerary...', 'info')
     
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/days/${dayIndex}/activities/${actIndex}/refresh-photo`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      if (response.ok) {
-        const result = await response.json()
-        if (result.photo) {
-          this.currentDays[dayIndex].activities[actIndex].photo = result.photo
-          this.showNotification('📸 Photo refreshed!', 'success')
-        } else {
-          this.showNotification('No new photo found', 'info')
-        }
-      } else {
-        this.showNotification('Failed to refresh photo', 'error')
+    // First, try the standard photo addition endpoint
+    const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
-    } catch (error) {
-      console.error('Error refreshing photo:', error)
-      this.showNotification('Failed to refresh photo', 'error')
-    } finally {
-      this.refreshingPhoto = false
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      this.itinerary = result.itinerary
+      this.originalItinerary = JSON.parse(JSON.stringify(result.itinerary))
+      
+      // Check if activity photos were actually generated
+      const activityPhotosCount = this.countActivityPhotos()
+      
+      if (activityPhotosCount === 0) {
+        this.showNotification('📸 Destination photos added, generating activity photos...', 'info')
+        await this.generateActivityPhotosManually()
+      } else {
+        this.showNotification(`✨ Added ${result.photoCount} photos to your itinerary!`, 'success')
+      }
+    } else {
+      const errorData = await response.json()
+      console.error('Photo addition failed:', errorData)
+      await this.generateAllPhotosManually()
     }
-  },
+  } catch (error) {
+    console.error('Error adding photos:', error)
+    await this.generateAllPhotosManually()
+  } finally {
+    this.addingPhotos = false
+  }
+},
+countActivityPhotos() {
+  let count = 0
+  if (this.itinerary?.days) {
+    this.itinerary.days.forEach(day => {
+      if (day.activities) {
+        day.activities.forEach(activity => {
+          if (activity.photo && activity.photo.url) {
+            count++
+          }
+        })
+      }
+    })
+  }
+  return count
+},  
+
+// FRONTEND: Enhanced photo generation methods for Vue component
+
+// Enhanced addPhotosToItinerary with better activity photo handling
+async addPhotosToItinerary() {
+  this.addingPhotos = true
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    this.showNotification('📸 Adding photos to your itinerary...', 'info')
+    
+    // First, try the standard photo addition endpoint
+    const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      this.itinerary = result.itinerary
+      this.originalItinerary = JSON.parse(JSON.stringify(result.itinerary))
+      
+      // Check if activity photos were actually generated
+      const activityPhotosCount = this.countActivityPhotos()
+      
+      if (activityPhotosCount === 0) {
+        this.showNotification('📸 Destination photos added, generating activity photos...', 'info')
+        await this.generateActivityPhotosManually()
+      } else {
+        this.showNotification(`✨ Added ${result.photoCount} photos to your itinerary!`, 'success')
+      }
+    } else {
+      const errorData = await response.json()
+      console.error('Photo addition failed:', errorData)
+      await this.generateAllPhotosManually()
+    }
+  } catch (error) {
+    console.error('Error adding photos:', error)
+    await this.generateAllPhotosManually()
+  } finally {
+    this.addingPhotos = false
+  }
+},
+
+// Count how many activities have photos
+countActivityPhotos() {
+  let count = 0
+  if (this.itinerary?.days) {
+    this.itinerary.days.forEach(day => {
+      if (day.activities) {
+        day.activities.forEach(activity => {
+          if (activity.photo && activity.photo.url) {
+            count++
+          }
+        })
+      }
+    })
+  }
+  return count
+},
+
+async fetchDestinationPhotos() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/photos/destination/${encodeURIComponent(this.itinerary.destination)}?count=10`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      return result.photos || []
+    }
+  } catch (error) {
+    console.error('Error fetching destination photos:', error)
+  }
+  
+  return []
+},
+
+async fetchActivityPhoto(activity, destinationPhotos) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/photos/activity?${new URLSearchParams({
+      destination: this.itinerary.destination,
+      activity: activity.activity,
+      location: activity.location
+    })}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      return result.photo
+    }
+  } catch (error) {
+    console.error('Error fetching activity photo:', error)
+  }
+  
+  // Return a destination photo as fallback
+  return destinationPhotos[Math.floor(Math.random() * destinationPhotos.length)] || null
+},
+
+// Fetch activity-specific photo
+async fetchActivityPhoto(activity, destinationPhotos) {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/photos/activity?${new URLSearchParams({
+      destination: this.itinerary.destination,
+      activity: activity.activity,
+      location: activity.location
+    })}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      return result.photo
+    }
+  } catch (error) {
+    console.error('Error fetching activity photo:', error)
+  }
+  
+  // Return a destination photo as fallback
+  return destinationPhotos[Math.floor(Math.random() * destinationPhotos.length)] || null
+},
+
+// Save itinerary with photos
+async saveItineraryWithPhotos() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        ...this.itinerary,
+        photosEnabled: true,
+        updatedAt: new Date().toISOString()
+      })
+    })
+    
+    if (response.ok) {
+      const updatedItinerary = await response.json()
+      this.itinerary = updatedItinerary
+      this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+    } else {
+      throw new Error('Failed to save itinerary with photos')
+    }
+  } catch (error) {
+    console.error('Error saving itinerary with photos:', error)
+    throw error
+  }
+},
+
+// Generate all photos manually (fallback method)
+async generateAllPhotosManually() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    this.showNotification('📸 Generating all photos manually...', 'info')
+    
+    // Get destination photos
+    const destinationPhotos = await this.fetchDestinationPhotos()
+    
+    // Update itinerary with destination photos
+    if (destinationPhotos.length > 0) {
+      this.itinerary.destinationPhotos = destinationPhotos.slice(0, 3)
+      this.itinerary.photosEnabled = true
+    }
+    
+    // Generate activity photos
+    await this.generateActivityPhotosManually()
+    
+    this.showNotification('✨ All photos generated manually!', 'success')
+    
+  } catch (error) {
+    console.error('Error generating all photos manually:', error)
+    this.showNotification('❌ Could not generate photos. Please try again later.', 'error')
+  }
+},
+
+// Enhanced getActivityPhoto method
+getActivityPhoto(activity) {
+  // Check for direct photo first
+  if (activity.photo && activity.photo.url) {
+    return activity.photo
+  }
+  
+  // Check for fallback photo
+  if (activity.fallbackPhoto && activity.fallbackPhoto.url) {
+    return activity.fallbackPhoto
+  }
+  
+  // Use destination photo as last resort
+  if (this.itinerary.destinationPhotos && this.itinerary.destinationPhotos.length > 0) {
+    return this.itinerary.destinationPhotos[0]
+  }
+  
+  return null
+},
+
+// Enhanced refresh activity photo
+async refreshActivityPhoto(dayIndex, actIndex) {
+  this.refreshingPhoto = true
+  
+  try {
+    const activity = this.currentDays[dayIndex].activities[actIndex]
+    this.showNotification('📸 Refreshing activity photo...', 'info')
+    
+    // Get destination photos for fallback
+    const destPhotos = await this.fetchDestinationPhotos()
+    
+    // Try to get a new activity photo
+    const newPhoto = await this.fetchActivityPhoto(activity, destPhotos)
+    
+    if (newPhoto) {
+      this.currentDays[dayIndex].activities[actIndex].photo = newPhoto
+      this.showNotification('📸 Photo refreshed!', 'success')
+    } else {
+      // Use a different destination photo as fallback
+      const fallbackPhoto = destPhotos[Math.floor(Math.random() * destPhotos.length)]
+      this.currentDays[dayIndex].activities[actIndex].fallbackPhoto = fallbackPhoto
+      this.showNotification('📸 Used alternative photo', 'info')
+    }
+    
+    // Save the changes
+    await this.saveItineraryWithPhotos()
+    
+  } catch (error) {
+    console.error('Error refreshing photo:', error)
+    this.showNotification('Failed to refresh photo', 'error')
+  } finally {
+    this.refreshingPhoto = false
+  }
+},
+
+// Debug method to check photo status
+debugPhotoStatus() {
+  console.log('🔍 Photo Debug Status:')
+  console.log('Photos enabled:', this.itinerary?.photosEnabled)
+  console.log('Destination photos:', this.itinerary?.destinationPhotos?.length || 0)
+  
+  if (this.itinerary?.days) {
+    this.itinerary.days.forEach((day, dayIndex) => {
+      console.log(`Day ${dayIndex + 1}:`)
+      console.log('  Day photo:', !!day.dayPhoto)
+      
+      if (day.activities) {
+        day.activities.forEach((activity, actIndex) => {
+          console.log(`  Activity ${actIndex + 1} (${activity.activity}):`)
+          console.log('    Direct photo:', !!activity.photo?.url)
+          console.log('    Fallback photo:', !!activity.fallbackPhoto?.url)
+          console.log('    Has any photo:', !!this.getActivityPhoto(activity))
+        })
+      }
+    })
+  }
+  
+  console.log('Total activity photos:', this.countActivityPhotos())
+},
+
+// Generate activity photos manually
+async generateActivityPhotosManually() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    this.showNotification('📸 Generating individual activity photos...', 'info')
+    
+    // Get destination photos for fallback
+    const destPhotos = await this.fetchDestinationPhotos()
+    
+    // Process each day
+    for (let dayIndex = 0; dayIndex < this.itinerary.days.length; dayIndex++) {
+      const day = this.itinerary.days[dayIndex]
+      
+      if (day.activities && day.activities.length > 0) {
+        // Process each activity
+        for (let actIndex = 0; actIndex < day.activities.length; actIndex++) {
+          const activity = day.activities[actIndex]
+          
+          // Skip if activity already has a photo
+          if (activity.photo && activity.photo.url) {
+            continue
+          }
+          
+          try {
+            // Try to get activity-specific photo
+            const activityPhoto = await this.fetchActivityPhoto(activity, destPhotos)
+            
+            if (activityPhoto) {
+              this.itinerary.days[dayIndex].activities[actIndex].photo = activityPhoto
+            } else {
+              // Use destination photo as fallback
+              const fallbackPhoto = destPhotos[actIndex % destPhotos.length]
+              this.itinerary.days[dayIndex].activities[actIndex].fallbackPhoto = fallbackPhoto
+            }
+            
+            // Small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 100))
+            
+          } catch (error) {
+            console.error(`Error getting photo for activity ${actIndex} on day ${dayIndex}:`, error)
+            // Use destination photo as fallback
+            const fallbackPhoto = destPhotos[actIndex % destPhotos.length]
+            this.itinerary.days[dayIndex].activities[actIndex].fallbackPhoto = fallbackPhoto
+          }
+        }
+      }
+    }
+    
+    // Save the updated itinerary
+    await this.saveItineraryWithPhotos()
+    
+    const activityPhotosCount = this.countActivityPhotos()
+    this.showNotification(`✨ Generated ${activityPhotosCount} activity photos!`, 'success')
+    
+  } catch (error) {
+    console.error('Error generating activity photos manually:', error)
+    this.showNotification('❌ Some activity photos could not be generated', 'warning')
+  }
+},
+
 
     // =============================================================================
     // DATA MANAGEMENT
