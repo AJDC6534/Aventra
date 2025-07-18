@@ -927,7 +927,7 @@ export default {
           days: this.currentDays
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1201,7 +1201,7 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
       
       if (newItineraryData && newItineraryData.days) {
         // Now update the existing itinerary with the new data
-        const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
