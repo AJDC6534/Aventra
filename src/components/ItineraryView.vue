@@ -779,109 +779,68 @@ export default {
   // =============================================================================
   
   getActivityPhoto(activity) {
-    // Debug logging to see what's actually in the activity
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Activity photo debug:', {
-        activity: activity.activity,
-        hasPhoto: !!activity.photo,
-        hasFallback: !!activity.fallbackPhoto,
-        photoUrl: activity.photo?.url,
-        fallbackUrl: activity.fallbackPhoto?.url
-      });
-    }
-    
-    // Check for photo with valid URL
-    if (activity.photo && activity.photo.url && activity.photo.url.trim()) {
-      return activity.photo;
-    }
-    
-    // Check for fallback photo with valid URL
-    if (activity.fallbackPhoto && activity.fallbackPhoto.url && activity.fallbackPhoto.url.trim()) {
-      return activity.fallbackPhoto;
-    }
-    
-    return null;
+    return activity.photo || activity.fallbackPhoto || null
   },
+  
   async addPhotosToItinerary() {
-    this.addingPhotos = true;
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
+    this.addingPhotos = true
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
     
     try {
-      this.showNotification('📸 Adding photos to your itinerary...', 'info');
+      this.showNotification('📸 Adding photos to your itinerary...', 'info')
       
       const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
+      })
       
       if (response.ok) {
-        const result = await response.json();
-        this.itinerary = result.itinerary;
-        this.originalItinerary = JSON.parse(JSON.stringify(result.itinerary));
-        
-        // Show detailed success message
-        const photoStats = this.getPhotoStats();
-        this.showNotification(
-          `✨ Photos added! ${photoStats.activityPhotos} activity photos, ${photoStats.destinationPhotos} destination photos`, 
-          'success'
-        );
-        
-        // Debug log to see what photos were added
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Photos added successfully:', {
-            destinationPhotos: result.itinerary.destinationPhotos?.length || 0,
-            firstActivity: result.itinerary.days?.[0]?.activities?.[0]?.photo || null,
-            photoStats: photoStats
-          });
-        }
+        const result = await response.json()
+        this.itinerary = result.itinerary
+        this.originalItinerary = JSON.parse(JSON.stringify(result.itinerary))
+        this.showNotification(`✨ Added ${result.photoCount} photos to your itinerary!`, 'success')
       } else {
-        const errorData = await response.json();
-        this.showNotification(errorData.message || 'Failed to add photos', 'error');
+        const errorData = await response.json()
+        this.showNotification(errorData.message || 'Failed to add photos', 'error')
       }
     } catch (error) {
-      console.error('Error adding photos:', error);
-      this.showNotification('Failed to add photos. Please try again.', 'error');
+      console.error('Error adding photos:', error)
+      this.showNotification('Failed to add photos. Please try again.', 'error')
     } finally {
-      this.addingPhotos = false;
+      this.addingPhotos = false
     }
   },
   
   async refreshActivityPhoto(dayIndex, actIndex) {
-    this.refreshingPhoto = true;
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
+    this.refreshingPhoto = true
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
     
     try {
-      this.showNotification('🔄 Refreshing photo...', 'info');
-      
       const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/days/${dayIndex}/activities/${actIndex}/refresh-photo`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-      });
+      })
       
       if (response.ok) {
-        const result = await response.json();
-        if (result.photo && result.photo.url) {
-          // Update the photo in the current data
-          if (this.itinerary.days[dayIndex] && this.itinerary.days[dayIndex].activities[actIndex]) {
-            this.itinerary.days[dayIndex].activities[actIndex].photo = result.photo;
-          }
-          this.showNotification('📸 Photo refreshed successfully!', 'success');
+        const result = await response.json()
+        if (result.photo) {
+          this.currentDays[dayIndex].activities[actIndex].photo = result.photo
+          this.showNotification('📸 Photo refreshed!', 'success')
         } else {
-          this.showNotification('No new photo found for this activity', 'info');
+          this.showNotification('No new photo found', 'info')
         }
       } else {
-        const errorData = await response.json();
-        this.showNotification(errorData.message || 'Failed to refresh photo', 'error');
+        this.showNotification('Failed to refresh photo', 'error')
       }
     } catch (error) {
-      console.error('Error refreshing photo:', error);
-      this.showNotification('Failed to refresh photo. Please try again.', 'error');
+      console.error('Error refreshing photo:', error)
+      this.showNotification('Failed to refresh photo', 'error')
     } finally {
-      this.refreshingPhoto = false;
+      this.refreshingPhoto = false
     }
   },
 
@@ -943,79 +902,59 @@ export default {
     },
     
     async saveChanges() {
-      this.saving = true;
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
-  
-  try {
-    if (new Date(this.editForm.endDate) <= new Date(this.editForm.startDate)) {
-      this.showNotification('End date must be after start date.', 'error');
-      this.saving = false;
-      return;
-    }
-    
-    // Prepare the update payload with proper structure
-    const updatePayload = {
-      title: this.editForm.title,
-      destination: this.editForm.destination,
-      startDate: this.editForm.startDate,
-      endDate: this.editForm.endDate,
-      preferences: {
-        interests: [...this.editForm.interests],
-        pace: this.editForm.pace,
-        accommodation: this.itinerary.preferences?.accommodation || '',
-      },
-      budget: this.getBudgetValue(this.editForm.budget),
-      notes: this.editForm.notes,
-      days: this.currentDays,
-      // Preserve photo settings
-      photosEnabled: this.itinerary.photosEnabled,
-      destinationPhotos: this.itinerary.destinationPhotos
-    };
-    
-    // Debug log to see what we're sending
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Saving changes:', {
-        payload: updatePayload,
-        destinationChanged: updatePayload.destination !== this.originalItinerary.destination,
-        photosEnabled: updatePayload.photosEnabled
-      });
-    }
-    
-    const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(updatePayload)
-    });
-    
-    if (response.ok) {
-      const updatedItinerary = await response.json();
-      this.itinerary = updatedItinerary;
-      this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
-      this.originalDuration = this.tripDuration;
-      this.editMode = false;
-      this.showDateWarning = false;
+      this.saving = true
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
       
-      // Show success message with photo info
-      const photoStats = this.getPhotoStats();
-      this.showNotification(
-        `✅ Changes saved! ${photoStats.total > 0 ? `${photoStats.total} photos included.` : ''}`, 
-        'success'
-      );
-    } else {
-      const errorData = await response.json();
-      console.error('Save error:', errorData);
-      this.showNotification(errorData.message || 'Failed to save changes.', 'error');
-    }
-  } catch (error) {
-    console.error('Error saving changes:', error);
-    this.showNotification('Failed to save changes. Please try again.', 'error');
-  } finally {
-    this.saving = false;
-  }
-},
+      try {
+        if (new Date(this.editForm.endDate) <= new Date(this.editForm.startDate)) {
+          this.showNotification('End date must be after start date.', 'error')
+          this.saving = false
+          return
+        }
+        
+        const updatePayload = {
+          title: this.editForm.title,
+          destination: this.editForm.destination,
+          startDate: this.editForm.startDate,
+          endDate: this.editForm.endDate,
+          preferences: {
+            interests: [...this.editForm.interests],
+            pace: this.editForm.pace,
+            accommodation: this.itinerary.preferences?.accommodation || '',
+          },
+          budget: this.getBudgetValue(this.editForm.budget),
+          notes: this.editForm.notes,
+          days: this.currentDays
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(updatePayload)
+        })
+        
+        if (response.ok) {
+          const updatedItinerary = await response.json()
+          this.itinerary = updatedItinerary
+          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+          this.originalDuration = this.tripDuration
+          this.editMode = false
+          this.showDateWarning = false
+          this.showNotification('Itinerary updated successfully! 🎉', 'success')
+        } else {
+          const errorData = await response.json()
+          this.showNotification(errorData.message || 'Failed to save changes.', 'error')
+        }
+      } catch (error) {
+        console.error('Error saving changes:', error)
+        this.showNotification('Failed to save changes. Please try again.', 'error')
+      } finally {
+        this.saving = false
+      }
+    },
     
     cancelChanges() {
       if (confirm('Are you sure you want to cancel your changes?')) {
@@ -1199,147 +1138,168 @@ export default {
     },
     
     async regenerateEntireItinerary() {
-      if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
-        return;
-      }
-      
-      this.generatingAI = true;
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com';
-      
-      try {
-        this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info');
-        
-        const currentValues = this.getCurrentValues();
-        
-        // Use the enhanced itinerary generation endpoint instead of chat
-        const response = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            destination: currentValues.destination,
-            startDate: currentValues.startDate,
-            endDate: currentValues.endDate,
-            interests: currentValues.interests,
-            budget: currentValues.budget,
-            pace: currentValues.pace,
-            includePhotos: this.itinerary.photosEnabled || true // Include photos if enabled
-          })
-        });
-        
-        if (response.ok) {
-          const newItinerary = await response.json();
-          
-          // Update the current itinerary with the new one
-          const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              title: newItinerary.title,
-              destination: newItinerary.destination,
-              startDate: newItinerary.startDate,
-              endDate: newItinerary.endDate,
-              preferences: newItinerary.preferences,
-              budget: newItinerary.budget,
-              days: newItinerary.days,
-              destinationPhotos: newItinerary.destinationPhotos,
-              photosEnabled: newItinerary.photosEnabled,
-              aiGenerated: true
-            })
-          });
-          
-          if (updateResponse.ok) {
-            const updatedItinerary = await updateResponse.json();
-            this.itinerary = updatedItinerary;
-            this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary));
-            
-            // Show success message with photo stats
-            const photoStats = this.getPhotoStats();
-            this.showNotification(
-              `✨ Itinerary regenerated! ${photoStats.total} photos included.`, 
-              'success'
-            );
-          } else {
-            const errorData = await updateResponse.json();
-            this.showNotification(errorData.message || 'Failed to update itinerary', 'error');
-          }
-        } else {
-          const errorData = await response.json();
-          this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error');
+  if (!confirm('This will regenerate the entire itinerary with AI based on your current preferences. Continue?')) {
+    return
+  }
+  
+  this.generatingAI = true
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+  
+  try {
+    this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
+    
+    const currentValues = this.getCurrentValues()
+    
+    // Use the AI chat endpoint to generate new days instead of creating a new itinerary
+    const prompt = `Generate a complete ${this.tripDuration}-day itinerary for ${currentValues.destination}.
+
+Trip Details:
+- Destination: ${currentValues.destination}
+- Start Date: ${currentValues.startDate}
+- End Date: ${currentValues.endDate}
+- Duration: ${this.tripDuration} days
+- Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
+- Budget: ${currentValues.budget}
+- Pace: ${currentValues.pace}
+
+Return ONLY a JSON object with this structure:
+{
+  "days": [
+    {
+      "date": "2024-01-15",
+      "activities": [
+        {
+          "time": "09:00",
+          "activity": "Activity name",
+          "location": "Location name",
+          "duration": "2 hours",
+          "cost": 25,
+          "notes": "Any helpful notes"
         }
-      } catch (error) {
-        console.error('Error regenerating itinerary:', error);
-        this.showNotification('Failed to regenerate itinerary. Please try again.', 'error');
-      } finally {
-        this.generatingAI = false;
-      }
-    },
+      ]
+    }
+  ]
+}
 
-     async generateAIActivities(dayIndex) {
-      this.generatingAI = true
-      this.showDayMenu = null
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'} activities per day.`
+
+    const aiResponse = await fetch(`${API_BASE_URL}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        message: prompt,
+        itineraryId: this.itinerary._id
+      })
+    })
+    
+    if (aiResponse.ok) {
+      const result = await aiResponse.json()
+      const newItineraryData = this.parseAIResponse(result.response)
       
-      try {
-        this.showNotification('🤖 Generating AI activities for this day...', 'info')
-        
-        const day = this.currentDays[dayIndex]
-        const currentValues = this.getCurrentValues()
-        const activityCount = currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'
-        
-        const prompt = `Generate ${activityCount} activities for Day ${dayIndex + 1} of a trip to ${currentValues.destination}.
-
-  Date: ${day.date}
-  Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
-  Budget: ${currentValues.budget}
-  Pace: ${currentValues.pace}
-
-  Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
-
-        const response = await fetch(`${API_BASE_URL}/api/chat`, {
-          method: 'POST',
+      if (newItineraryData && newItineraryData.days) {
+        // Now update the existing itinerary with the new data
+        const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
           body: JSON.stringify({
-            message: prompt,
-            itineraryId: this.itinerary._id
+            ...this.itinerary,
+            days: newItineraryData.days,
+            aiGenerated: true,
+            updatedAt: new Date()
           })
         })
         
-        if (response.ok) {
-          const result = await response.json()
-          const aiData = this.parseAIResponse(result.response)
-          
-          if (aiData?.activities) {
-            const shouldReplace = day.activities?.length > 0 ? 
-              confirm(`This day has ${day.activities.length} existing activities. Replace them?`) : true
-            
-            if (shouldReplace) {
-              this.currentDays[dayIndex].activities = aiData.activities
-            } else {
-              this.currentDays[dayIndex].activities = [
-                ...(this.currentDays[dayIndex].activities || []),
-                ...aiData.activities
-              ]
-            }
-            
-            this.showNotification('✨ AI activities generated successfully!', 'success')
-          }
+        if (updateResponse.ok) {
+          const updatedItinerary = await updateResponse.json()
+          this.itinerary = updatedItinerary
+          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+          this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+        } else {
+          const errorData = await updateResponse.json()
+          this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
         }
-      } catch (error) {
-        console.error('Error generating AI activities:', error)
-        this.showNotification('Failed to generate AI activities. Please try again.', 'error')
-      } finally {
-        this.generatingAI = false
+      } else {
+        this.showNotification('Failed to parse AI response. Please try again.', 'error')
       }
-    },
+      
+    } else {
+      const errorData = await response.json()
+      this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
+    }
+  } catch (error) {
+    console.error('Error regenerating itinerary:', error)
+    this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
+  } finally {
+    this.generatingAI = false
+  }
+},
+
+     async generateAIActivities(dayIndex) {
+    this.generatingAI = true
+    this.showDayMenu = null
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://aventra-backend.onrender.com'
+    
+    try {
+      this.showNotification('🤖 Generating AI activities for this day...', 'info')
+      
+      const day = this.currentDays[dayIndex]
+      const currentValues = this.getCurrentValues()
+      const activityCount = currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'
+      
+      const prompt = `Generate ${activityCount} activities for Day ${dayIndex + 1} of a trip to ${currentValues.destination}.
+
+Date: ${day.date}
+Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
+Budget: ${currentValues.budget}
+Pace: ${currentValues.pace}
+
+Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
+
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          message: prompt,
+          itineraryId: this.itinerary._id
+        })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        const aiData = this.parseAIResponse(result.response)
+        
+        if (aiData?.activities) {
+          const shouldReplace = day.activities?.length > 0 ? 
+            confirm(`This day has ${day.activities.length} existing activities. Replace them?`) : true
+          
+          if (shouldReplace) {
+            this.currentDays[dayIndex].activities = aiData.activities
+          } else {
+            this.currentDays[dayIndex].activities = [
+              ...(this.currentDays[dayIndex].activities || []),
+              ...aiData.activities
+            ]
+          }
+          
+          this.showNotification('✨ AI activities generated successfully!', 'success')
+        }
+      }
+    } catch (error) {
+      console.error('Error generating AI activities:', error)
+      this.showNotification('Failed to generate AI activities. Please try again.', 'error')
+    } finally {
+      this.generatingAI = false
+    }
+  },
     
     async enhanceActivity(dayIndex, actIndex) {
     this.generatingAI = true
@@ -1556,106 +1516,21 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     // =============================================================================
     
      parseAIResponse(response) {
-      try {
-        // Remove any markdown formatting
-        let jsonStr = response.trim();
-        jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-        jsonStr = jsonStr.replace(/^```/g, '').replace(/```$/g, '');
-        
-        // Find the JSON object
-        const jsonMatch = jsonStr.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          console.error('No JSON object found in AI response:', response);
-          return null;
-        }
-        
-        jsonStr = jsonMatch[0];
-        
-        // Fix common JSON issues before parsing
-        jsonStr = jsonStr
-          // Fix trailing commas
-          .replace(/,(\s*[}\]])/g, '$1')
-          // Fix unquoted keys
-          .replace(/(\w+):/g, '"$1":')
-          // Fix single quotes
-          .replace(/'/g, '"')
-          // Fix cost field issues - handle text values
-          .replace(/"cost":\s*"Free"/gi, '"cost": 0')
-          .replace(/"cost":\s*"free"/gi, '"cost": 0')
-          .replace(/"cost":\s*"Variable"/gi, '"cost": 25')
-          .replace(/"cost":\s*"Varies"/gi, '"cost": 30')
-          .replace(/"cost":\s*"Depends"/gi, '"cost": 20')
-          // Fix any remaining quoted cost values
-          .replace(/"cost":\s*"[^"]*"/g, '"cost": 0')
-          // Fix any remaining non-numeric cost values
-          .replace(/"cost":\s*[^0-9,}\]\s]/g, '"cost": 0');
-        
-        const parsed = JSON.parse(jsonStr);
-        
-        // Validate and sanitize the parsed data
-        if (parsed.days && Array.isArray(parsed.days)) {
-          parsed.days = parsed.days.map(day => ({
-            ...day,
-            activities: (day.activities || []).map(activity => ({
-              ...activity,
-              cost: typeof activity.cost === 'number' ? activity.cost : 0,
-              time: activity.time || '09:00',
-              duration: activity.duration || '2 hours',
-              activity: activity.activity || 'Explore area',
-              location: activity.location || 'City center',
-              notes: activity.notes || ''
-            }))
-          }));
-        }
-        
-        if (parsed.activities && Array.isArray(parsed.activities)) {
-          parsed.activities = parsed.activities.map(activity => ({
-            ...activity,
-            cost: typeof activity.cost === 'number' ? activity.cost : 0,
-            time: activity.time || '09:00',
-            duration: activity.duration || '2 hours',
-            activity: activity.activity || 'Explore area',
-            location: activity.location || 'City center',
-            notes: activity.notes || ''
-          }));
-        }
-        
-        return parsed;
-      } catch (error) {
-        console.error('Error parsing AI response:', error);
-        console.error('Raw response:', response);
-        return null;
-      }
-    },
-
-    getPhotoStats() {
-      const stats = {
-        total: 0,
-        activityPhotos: 0,
-        fallbackPhotos: 0,
-        destinationPhotos: (this.itinerary.destinationPhotos || []).length
-      };
+    try {
+      let jsonStr = response.trim()
+      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '')
       
-      if (this.itinerary.days) {
-        this.itinerary.days.forEach(day => {
-          if (day.activities) {
-            day.activities.forEach(activity => {
-              if (activity.photo && activity.photo.url) {
-                stats.activityPhotos++;
-                stats.total++;
-              } else if (activity.fallbackPhoto && activity.fallbackPhoto.url) {
-                stats.fallbackPhotos++;
-                stats.total++;
-              }
-            });
-          }
-        });
+      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        jsonStr = jsonMatch[0]
       }
       
-      stats.total += stats.destinationPhotos;
-      return stats;
-    },
-
+      return JSON.parse(jsonStr)
+    } catch (error) {
+      console.error('Error parsing AI response:', error)
+      return null
+    }
+  },
   
   showAlternativesModal(dayIndex, actIndex, alternatives) {
     const originalActivity = this.currentDays[dayIndex].activities[actIndex]
