@@ -927,7 +927,7 @@ export default {
           days: this.currentDays
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
