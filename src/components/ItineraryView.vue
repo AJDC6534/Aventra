@@ -774,6 +774,207 @@ export default {
   },
   
   methods: {
+
+    async exportItineraryAsPDF() {
+  try {
+    // Import html2pdf
+    const html2pdf = (await import('html2pdf.js')).default
+    
+    // Create a printable version of the itinerary
+    const printableContent = this.createPrintableHTML()
+    
+    // Configure PDF options
+    const options = {
+      margin: 1,
+      filename: `${this.itinerary.destination}-itinerary.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        allowTaint: false
+      },
+      jsPDF: { 
+        unit: 'in', 
+        format: 'letter', 
+        orientation: 'portrait' 
+      }
+    }
+    
+    // Generate PDF
+    await html2pdf().set(options).from(printableContent).save()
+    
+    this.showNotification('PDF exported successfully! 📄', 'success')
+    
+  } catch (error) {
+    console.error('Error exporting PDF:', error)
+    this.showNotification('Failed to export PDF. Please try again.', 'error')
+  }
+},
+
+// Helper method to create printable HTML
+createPrintableHTML() {
+  const printContent = document.createElement('div')
+  printContent.style.cssText = `
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+  `
+  
+  printContent.innerHTML = `
+    <style>
+      .pdf-header {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        color: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .pdf-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .pdf-subtitle {
+        font-size: 16px;
+        opacity: 0.9;
+      }
+      .pdf-details {
+        background: #f8fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #3b82f6;
+      }
+      .pdf-detail-item {
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .pdf-day {
+        margin-bottom: 30px;
+        break-inside: avoid;
+      }
+      .pdf-day-header {
+        background: #e2e8f0;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        font-weight: bold;
+        font-size: 16px;
+        border-bottom: 2px solid #3b82f6;
+      }
+      .pdf-activities {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+      }
+      .pdf-activity {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .pdf-activity:last-child {
+        border-bottom: none;
+      }
+      .pdf-activity-header {
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      .pdf-activity-details {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 5px;
+      }
+      .pdf-activity-notes {
+        font-size: 11px;
+        color: #475569;
+        background: #fef3c7;
+        padding: 8px;
+        border-radius: 4px;
+        margin-top: 8px;
+      }
+      .pdf-empty-day {
+        padding: 20px;
+        text-align: center;
+        color: #64748b;
+        font-style: italic;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+      }
+      .pdf-footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 10px;
+        color: #64748b;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 15px;
+      }
+    </style>
+    
+    <div class="pdf-header">
+      <div class="pdf-title">${this.itinerary.title}</div>
+      <div class="pdf-subtitle">Travel Itinerary</div>
+    </div>
+    
+    <div class="pdf-details">
+      <div class="pdf-detail-item"><strong>📍 Destination:</strong> ${this.itinerary.destination}</div>
+      <div class="pdf-detail-item"><strong>📅 Dates:</strong> ${this.formatDate(this.itinerary.startDate)} - ${this.formatDate(this.itinerary.endDate)}</div>
+      <div class="pdf-detail-item"><strong>⏱️ Duration:</strong> ${this.tripDuration} days</div>
+      <div class="pdf-detail-item"><strong>💰 Estimated Cost:</strong> $${this.estimatedCost}</div>
+      ${this.itinerary.preferences?.interests?.length > 0 ? 
+        `<div class="pdf-detail-item"><strong>🎯 Interests:</strong> ${this.itinerary.preferences.interests.join(', ')}</div>` : ''
+      }
+      ${this.itinerary.preferences?.pace ? 
+        `<div class="pdf-detail-item"><strong>⚡ Pace:</strong> ${this.itinerary.preferences.pace}</div>` : ''
+      }
+    </div>
+    
+    ${this.currentDays.map((day, dayIndex) => `
+      <div class="pdf-day">
+        <div class="pdf-day-header">
+          DAY ${dayIndex + 1} - ${this.formatDayDate(day.date)}
+          ${day.activities?.length > 0 ? `(${day.activities.length} activities, $${this.getDayCost(day)})` : ''}
+        </div>
+        
+        ${day.activities && day.activities.length > 0 ? `
+          <div class="pdf-activities">
+            ${day.activities.map(activity => `
+              <div class="pdf-activity">
+                <div class="pdf-activity-header">
+                  ${this.formatTime(activity.time)} - ${activity.activity}
+                </div>
+                <div class="pdf-activity-details">
+                  📍 ${activity.location} • ⏱️ ${activity.duration} • 💰 $${activity.cost || 0}
+                </div>
+                ${activity.notes ? `
+                  <div class="pdf-activity-notes">
+                    💡 ${activity.notes}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div class="pdf-empty-day">
+            No activities planned for this day
+          </div>
+        `}
+      </div>
+    `).join('')}
+    
+    <div class="pdf-footer">
+      Generated on ${new Date().toLocaleDateString()} • Total Activities: ${this.totalActivities} • 
+      Created with Travel Itinerary Planner
+    </div>
+  `
+  
+  return printContent
+},
     // =============================================================================
   // PHOTO MANAGEMENT METHODS
   // =============================================================================
@@ -2438,6 +2639,8 @@ parseFromText(text) {
     const mins = minutes % 60
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
   },
+
+  
   
   showNotification(message, type = 'info') {
     const notification = document.createElement('div')
