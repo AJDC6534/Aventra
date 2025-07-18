@@ -1149,39 +1149,40 @@ export default {
     this.showNotification('🤖 Regenerating entire itinerary with AI...', 'info')
     
     const currentValues = this.getCurrentValues()
+    const activitiesPerDay = currentValues.pace === 'relaxed' ? 3 : currentValues.pace === 'active' ? 5 : 4
     
-    // Use the AI chat endpoint to generate new days instead of creating a new itinerary
+    // Create a more structured prompt for better AI response
     const prompt = `Generate a complete ${this.tripDuration}-day itinerary for ${currentValues.destination}.
+
+IMPORTANT: Return ONLY a valid JSON object with the exact structure below. No additional text or explanation.
 
 Trip Details:
 - Destination: ${currentValues.destination}
-- Start Date: ${currentValues.startDate}
-- End Date: ${currentValues.endDate}
 - Duration: ${this.tripDuration} days
 - Interests: ${currentValues.interests.join(', ') || 'general sightseeing'}
 - Budget: ${currentValues.budget}
 - Pace: ${currentValues.pace}
+- Activities per day: ${activitiesPerDay}
 
-Return ONLY a JSON object with this structure:
+JSON Structure Required:
 {
   "days": [
     {
-      "date": "2024-01-15",
       "activities": [
         {
           "time": "09:00",
-          "activity": "Activity name",
-          "location": "Location name",
+          "activity": "Visit specific landmark or do specific activity",
+          "location": "Specific location name with area, ${currentValues.destination}",
           "duration": "2 hours",
           "cost": 25,
-          "notes": "Any helpful notes"
+          "notes": "Helpful tip or recommendation"
         }
       ]
     }
   ]
 }
 
-Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'active' ? '4-5' : '3-4'} activities per day.`
+Generate exactly ${this.tripDuration} days, each with ${activitiesPerDay} activities. Use realistic costs in USD. Make location names specific and detailed for better photo matching.`
 
     const aiResponse = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
@@ -1195,46 +1196,110 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
       })
     })
     
-    if (aiResponse.ok) {
-      const result = await aiResponse.json()
-      const newItineraryData = this.parseAIResponse(result.response)
+    if (!aiResponse.ok) {
+      const errorData = await aiResponse.json()
+      throw new Error(errorData.message || 'Failed to generate with AI')
+    }
+    
+    const result = await aiResponse.json()
+    console.log('AI Response:', result.response) // Debug log
+    
+    // Parse the AI response more robustly
+    const newItineraryData = this.parseAIResponse(result.response)
+    
+    if (!newItineraryData || !newItineraryData.days || !Array.isArray(newItineraryData.days)) {
+      throw new Error('Invalid AI response format')
+    }
+    
+    // Validate the generated data
+    if (newItineraryData.days.length !== this.tripDuration) {
+      throw new Error(`AI generated ${newItineraryData.days.length} days, expected ${this.tripDuration}`)
+    }
+    
+    // Add proper dates to the generated days
+    const startDate = new Date(currentValues.startDate)
+    const daysWithDates = newItineraryData.days.map((day, index) => {
+      const currentDate = new Date(startDate)
+      currentDate.setDate(startDate.getDate() + index)
+      const dateStr = currentDate.toISOString().split('T')[0]
       
-      if (newItineraryData && newItineraryData.days) {
-        // Now update the existing itinerary with the new data
-        const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
-          method: 'PUT',
+      return {
+        date: dateStr,
+        activities: day.activities || [],
+        dayPhoto: null // Will be populated if photos are enabled
+      }
+    })
+    
+    // Prepare the update payload
+    const updatePayload = {
+      title: this.itinerary.title,
+      destination: currentValues.destination,
+      startDate: currentValues.startDate,
+      endDate: currentValues.endDate,
+      preferences: {
+        interests: currentValues.interests,
+        pace: currentValues.pace,
+        accommodation: this.itinerary.preferences?.accommodation || '',
+      },
+      budget: this.getBudgetValue(currentValues.budget),
+      days: daysWithDates,
+      aiGenerated: true,
+      photosEnabled: this.itinerary.photosEnabled || false,
+      updatedAt: new Date().toISOString()
+    }
+    
+    // Update the itinerary
+    const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify(updatePayload)
+    })
+    
+    if (!updateResponse.ok) {
+      const errorData = await updateResponse.json()
+      throw new Error(errorData.message || 'Failed to update itinerary')
+    }
+    
+    let updatedItinerary = await updateResponse.json()
+    
+    // If photos are enabled, add photos to the regenerated itinerary
+    if (this.itinerary.photosEnabled) {
+      this.showNotification('📸 Adding photos to regenerated itinerary...', 'info')
+      
+      try {
+        const photoResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}/add-photos`, {
+          method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
-            ...this.itinerary,
-            days: newItineraryData.days,
-            aiGenerated: true,
-            updatedAt: new Date()
-          })
+          }
         })
         
-        if (updateResponse.ok) {
-          const updatedItinerary = await updateResponse.json()
-          this.itinerary = updatedItinerary
-          this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
-          this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+        if (photoResponse.ok) {
+          const photoResult = await photoResponse.json()
+          updatedItinerary = photoResult.itinerary
+          this.showNotification(`📸 Added ${photoResult.photoCount} photos to regenerated itinerary!`, 'success')
         } else {
-          const errorData = await updateResponse.json()
-          this.showNotification(errorData.message || 'Failed to update itinerary', 'error')
+          console.warn('Failed to add photos to regenerated itinerary')
+          this.showNotification('⚠️ Itinerary regenerated but photos could not be added', 'warning')
         }
-      } else {
-        this.showNotification('Failed to parse AI response. Please try again.', 'error')
+      } catch (photoError) {
+        console.warn('Error adding photos to regenerated itinerary:', photoError)
+        this.showNotification('⚠️ Itinerary regenerated but photos could not be added', 'warning')
       }
-      
-    } else {
-      const errorData = await response.json()
-      this.showNotification(errorData.message || 'Failed to regenerate itinerary', 'error')
     }
+    
+    // Update the local state
+    this.itinerary = updatedItinerary
+    this.originalItinerary = JSON.parse(JSON.stringify(updatedItinerary))
+    
+    this.showNotification('✨ Itinerary completely regenerated with AI!', 'success')
+    
   } catch (error) {
     console.error('Error regenerating itinerary:', error)
-    this.showNotification('Failed to regenerate itinerary. Please try again.', 'error')
+    this.showNotification(`Failed to regenerate itinerary: ${error.message}`, 'error')
   } finally {
     this.generatingAI = false
   }
@@ -1516,21 +1581,113 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     // =============================================================================
     
      parseAIResponse(response) {
-    try {
-      let jsonStr = response.trim()
-      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-      
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        jsonStr = jsonMatch[0]
+      try {
+        // Remove common AI response prefixes and suffixes
+        let cleanResponse = response.trim()
+        
+        // Remove markdown code blocks
+        cleanResponse = cleanResponse.replace(/```json\s*\n?/gi, '')
+        cleanResponse = cleanResponse.replace(/```\s*\n?/gi, '')
+        
+        // Remove common AI response text
+        cleanResponse = cleanResponse.replace(/^(here's|here is|the|this is|here's the|here is the).*?:/gi, '')
+        cleanResponse = cleanResponse.replace(/^(based on|according to|given).*?:/gi, '')
+        
+        // Find JSON object - look for opening brace and find matching closing brace
+        const openBraceIndex = cleanResponse.indexOf('{')
+        if (openBraceIndex === -1) {
+          console.warn('No JSON object found in AI response')
+          return null
+        }
+        
+        let braceCount = 0
+        let jsonEndIndex = -1
+        
+        for (let i = openBraceIndex; i < cleanResponse.length; i++) {
+          if (cleanResponse[i] === '{') {
+            braceCount++
+          } else if (cleanResponse[i] === '}') {
+            braceCount--
+            if (braceCount === 0) {
+              jsonEndIndex = i
+              break
+            }
+          }
+        }
+        
+        if (jsonEndIndex === -1) {
+          console.warn('Incomplete JSON object in AI response')
+          return null
+        }
+        
+        const jsonString = cleanResponse.substring(openBraceIndex, jsonEndIndex + 1)
+        console.log('Extracted JSON string:', jsonString) // Debug log
+        
+        const parsedData = JSON.parse(jsonString)
+        
+        // Validate the parsed data structure
+        if (parsedData.days && Array.isArray(parsedData.days)) {
+          // Validate each day has activities
+          parsedData.days.forEach((day, dayIndex) => {
+            if (!day.activities || !Array.isArray(day.activities)) {
+              console.warn(`Day ${dayIndex + 1} has no activities array, creating empty array`)
+              day.activities = []
+            }
+            
+            // Validate and sanitize each activity
+            day.activities.forEach((activity, actIndex) => {
+              if (!activity.time) activity.time = '09:00'
+              if (!activity.activity) activity.activity = 'Explore local area'
+              if (!activity.location) activity.location = 'Local area'
+              if (!activity.duration) activity.duration = '2 hours'
+              if (!activity.cost) activity.cost = 0
+              if (!activity.notes) activity.notes = ''
+              
+              // Ensure cost is a number
+              if (typeof activity.cost === 'string') {
+                const costMatch = activity.cost.match(/(\d+)/)
+                activity.cost = costMatch ? parseInt(costMatch[1]) : 0
+              }
+              
+              // Validate time format
+              if (!/^\d{2}:\d{2}$/.test(activity.time)) {
+                console.warn(`Invalid time format for activity ${actIndex + 1} on day ${dayIndex + 1}, using 09:00`)
+                activity.time = '09:00'
+              }
+            })
+          })
+          
+          return parsedData
+        } else if (parsedData.activities && Array.isArray(parsedData.activities)) {
+          // Handle case where AI returns just activities (for single day generation)
+          return parsedData
+        } else if (parsedData.alternatives && Array.isArray(parsedData.alternatives)) {
+          // Handle case where AI returns alternatives
+          return parsedData
+        } else {
+          console.warn('Parsed data does not have expected structure:', parsedData)
+          return null
+        }
+        
+      } catch (error) {
+        console.error('Error parsing AI response:', error)
+        console.log('Raw response:', response)
+        
+        // Try to extract any JSON-like structure as fallback
+        try {
+          const jsonMatches = response.match(/\{[^{}]*\}/g)
+          if (jsonMatches && jsonMatches.length > 0) {
+            const parsed = JSON.parse(jsonMatches[0])
+            console.log('Fallback parsing successful:', parsed)
+            return parsed
+          }
+        } catch (fallbackError) {
+          console.error('Fallback parsing also failed:', fallbackError)
+        }
+        
+        return null
       }
-      
-      return JSON.parse(jsonStr)
-    } catch (error) {
-      console.error('Error parsing AI response:', error)
-      return null
-    }
-  },
+    },
   
   showAlternativesModal(dayIndex, actIndex, alternatives) {
     const originalActivity = this.currentDays[dayIndex].activities[actIndex]
