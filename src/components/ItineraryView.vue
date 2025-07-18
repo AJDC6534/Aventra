@@ -1254,8 +1254,8 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
     const currentValues = this.getCurrentValues()
     
     // Step 1: Generate new itinerary with photos using the proper endpoint
-    const generateResponse = await fetch(`${API_BASE_URL}/api/generate-itinerary`, {
-      method: 'POST',
+    const generateResponse = await fetch(`${API_BASE_URL}/api/generate-itinerary/:id`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
