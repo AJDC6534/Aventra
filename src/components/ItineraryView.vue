@@ -1515,22 +1515,16 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     // UTILITY FUNCTIONS
     // =============================================================================
     
-     parseAIResponse(response) {
-    try {
-      let jsonStr = response.trim()
-      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '')
-      
-      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        jsonStr = jsonMatch[0]
-      }
-      
-      return JSON.parse(jsonStr)
-    } catch (error) {
-      console.error('Error parsing AI response:', error)
-      return null
-    }
-  },
+     parseAIResponse(aiResponse) {
+  try {
+    console.log('AI Response before parsing:', aiResponse);
+    const parsed = JSON.parse(aiResponse);
+    return parsed;
+  } catch (err) {
+    console.error('❌ Error parsing AI response:', err.message);
+    throw err;
+  }
+},
   
   showAlternativesModal(dayIndex, actIndex, alternatives) {
     const originalActivity = this.currentDays[dayIndex].activities[actIndex]
