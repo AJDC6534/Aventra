@@ -1,33 +1,15 @@
-<<<<<<< HEAD
-# .
+CST3990 UG INDIVIDUAL PROJECT
 
-This template should help get you started developing with Vue 3 in Vite.
+AVENTRA - TRAVEL ITINERARY PLANNER APP
 
-## Recommended IDE Setup
+ALYSSA JANELLE CAUBANG
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+M01054811
 
-## Customize configuration
+GITHUB PAGES LINK: https://ajdc6534.github.io/Aventra/#/
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+GITHUB FRONTEND REPO: https://github.com/AJDC6534/Aventra.git
 
-## Project Setup
+GITHUB BACKEND REPO: https://github.com/AJDC6534/Aventra_backend.git
 
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-=======
-FRONTEND
->>>>>>> 9a198c17ed2ca39b75541dae0a7555f329c667a4
+RENDER LINK: https://aventra-backend.onrender.com
