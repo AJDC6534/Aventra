@@ -1517,15 +1517,17 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     
      parseAIResponse(aiResponse) {
   try {
+    // Remove triple backticks if present
     let cleaned = aiResponse
       .trim()
-      .replace(/^```json\s*/i, '') // strip ```json
+      .replace(/^```json\s*/i, '')
       .replace(/^```/, '')
       .replace(/```$/, '')
       .trim();
 
-    // Replace `cost: Variable` with a default value
-    cleaned = cleaned.replace(/"cost"\s*:\s*Variable/g, '"cost": 0');
+    // Replace `key: value` with `"key": value`
+    // This is a very basic and aggressive fixer for common AI slipups
+    cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
 
     return JSON.parse(cleaned);
   } catch (err) {
