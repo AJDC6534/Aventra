@@ -927,7 +927,7 @@ export default {
           days: this.currentDays
         }
         
-        const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1201,7 +1201,7 @@ Generate ${currentValues.pace === 'relaxed' ? '2-3' : currentValues.pace === 'ac
       
       if (newItineraryData && newItineraryData.days) {
         // Now update the existing itinerary with the new data
-        const updateResponse = await fetch(`${API_BASE_URL}/api/generate-itineraries/${this.itinerary._id}`, {
+        const updateResponse = await fetch(`${API_BASE_URL}/api/itineraries/${this.itinerary._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -1261,8 +1261,8 @@ Pace: ${currentValues.pace}
 
 Return JSON: {"activities": [{"time": "09:00", "activity": "Name", "location": "Place", "duration": "2 hours", "cost": 25, "notes": "Tip"}]}`
 
-      const response = await fetch(`${API_BASE_URL}/api/generate-itineraries/:id`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1476,7 +1476,7 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${this.itinerary.destination}-itinerary.pdf`
+    a.download = `${this.itinerary.destination}-itinerary.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -1515,26 +1515,22 @@ Return JSON: {"alternatives": [{"time": "${activity.time}", "activity": "Alt 1",
     // UTILITY FUNCTIONS
     // =============================================================================
     
-     parseAIResponse(aiResponse) {
-  try {
-    // Remove triple backticks if present
-    let cleaned = aiResponse
-      .trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```/, '')
-      .replace(/```$/, '')
-      .trim();
-
-    // Replace `key: value` with `"key": value`
-    // This is a very basic and aggressive fixer for common AI slipups
-    cleaned = cleaned.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
-
-    return JSON.parse(cleaned);
-  } catch (err) {
-    console.error('❌ Error parsing AI response:', err.message);
-    throw err;
-  }
-},
+     parseAIResponse(response) {
+    try {
+      let jsonStr = response.trim()
+      jsonStr = jsonStr.replace(/```json\n?/g, '').replace(/```\n?/g, '')
+      
+      const jsonMatch = jsonStr.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        jsonStr = jsonMatch[0]
+      }
+      
+      return JSON.parse(jsonStr)
+    } catch (error) {
+      console.error('Error parsing AI response:', error)
+      return null
+    }
+  },
   
   showAlternativesModal(dayIndex, actIndex, alternatives) {
     const originalActivity = this.currentDays[dayIndex].activities[actIndex]
